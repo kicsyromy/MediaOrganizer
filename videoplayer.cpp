@@ -7,17 +7,25 @@ C_STYLE_BEGIN
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_player.h>
 
+#define G_CLASS(klass)  G_TYPE_CHECK_CLASS_CAST((klass), G_TYPE_OBJECT, GObjectClass)
+
+static const char *VIDEO_OUTPUT_TYPE = "RV32";
+typedef guint32 * ActualPixelDepthType;
+
 struct Frame
 {
     GMutex mutex_;
-    gint8 *buffer_;
-    size_t buffer_size_;
+    /* Every frame will be renderd in 32bit bitmap format */
+    PixelDepthType buffer_;
 };
 
 struct VideoData
 {
     libvlc_instance_t *vlc_instance_;
     libvlc_media_player_t *vlc_media_player_;
+
+    gint16 width;
+    gint16 height;
 };
 
 struct _VideoPlayer
@@ -26,7 +34,7 @@ struct _VideoPlayer
 
     /* Members */
     RenderCallback cb_;
-    void *cb_data_;
+    gpointer cb_data_;
     struct Frame frame_;
     struct VideoData video_data_;
 };
@@ -39,73 +47,44 @@ struct _VideoPlayerClass
 G_DEFINE_TYPE(VideoPlayer, video_player, G_TYPE_OBJECT)
 static void video_player_init(VideoPlayer *self);
 static void video_player_class_init(VideoPlayerClass *klass);
-static void video_player_dispose(GObject *video_player);
+static void video_player_finalize(GObject *video_player);
 
-static void video_pre_render_callback(void *video_player,
-                                      gint8 **pixel_buffer,
-                                      size_t size)
+
+/* Private methods */
+static void video_player_update_format(VideoPlayer *self);
+
+static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 {
-    VideoPlayer *self = (VideoPlayer *)video_player;
+    VideoPlayer *self = (VideoPlayer *)data;
     g_mutex_lock(&self->frame_.mutex_);
 
-    if (self->frame_.buffer_size_ != size)
-    {
-        self->frame_.buffer_size_ = size;
+    self->frame_.buffer_ = (PixelDepthType)g_malloc(self->video_data_.width *
+                                               self->video_data_.height *
+                                               sizeof(ActualPixelDepthType));
 
-        self->frame_.buffer_ = !self->frame_.buffer_ ?
-                    (gint8 *)g_malloc(size) :
-                    (gint8 *)g_realloc(self->frame_.buffer_, size);
-    }
+    *frame_buffer_out = self->frame_.buffer_;
 
-    *pixel_buffer = self->frame_.buffer_;
+    return NULL; /* picture identifier */
 }
 
-static void video_post_render_callback(void *video_player,
-                                      gint8 *pixel_buffer,
-                                      int width,
-                                      int height,
-                                      int pixel_pitch,
-                                      size_t size,
-                                      gint64 pts)
+static void vlc_video_unlock_callback(void *data, void *id, void *const *frame_buffer_in)
 {
-    UNUSED(pixel_buffer)
-    UNUSED(pixel_pitch)
-    UNUSED(size)
-    UNUSED(pts)
+    UNUSED(id)
+    UNUSED(frame_buffer_in)
 
-    VideoPlayer *self = (VideoPlayer *)video_player;
-
-    if (self->cb_)
-        self->cb_(self->frame_.buffer_, width, height, self->cb_data_);
-
+    VideoPlayer *self = (VideoPlayer *)data;
     g_mutex_unlock(&self->frame_.mutex_);
+
+    self->cb_(self->frame_.buffer_,
+              self->video_data_.width,
+              self->video_data_.height,
+              self->cb_data_);
 }
 
-
-static void audio_prerender_callback(void *audio_data,
-                            uint8_t **pcm_buffer,
-                            size_t size)
+static void vlc_video_frame_display(void *data, void *id)
 {
-    *pcm_buffer = (uint8_t *)g_malloc(size);
-}
-
-static void audio_postrender_callback(void *audio_data,
-                             uint8_t *pcm_buffer,
-                             unsigned int channels,
-                             unsigned int rate,
-                             unsigned int nb_samples,
-                             unsigned int bits_per_sample,
-                             size_t size,
-                             int64_t pts)
-{
-    UNUSED(audio_data)
-    UNUSED(pcm_buffer)
-    UNUSED(channels)
-    UNUSED(rate)
-    UNUSED(nb_samples)
-    UNUSED(bits_per_sample)
-    UNUSED(size)
-    UNUSED(pts)
+    UNUSED(data)
+    UNUSED(id)
 }
 
 VideoPlayer *video_player_new()
@@ -114,35 +93,7 @@ VideoPlayer *video_player_new()
 
     self->cb_ = NULL;
     self->cb_data_ = NULL;
-    self->frame_.buffer_size_ = 0;
     self->frame_.buffer_ = NULL;
-
-    const int smem_options_size = 1000;
-    char smem_options[smem_options_size];
-    snprintf(smem_options,
-             smem_options_size,
-             "#transcode{vcodec=RV24,acodec=in24}:smem{"
-             "video-prerender-callback=%lld,"
-             "video-postrender-callback=%lld,"
-             "audio-prerender-callback=%lld,"
-             "audio-postrender-callback=%lld,"
-             "video-data=%lld,"
-             "no-time-sync},",
-             (long long int)(intptr_t)(void *)&video_pre_render_callback,
-             (long long int)(intptr_t)(void *)&video_post_render_callback,
-             (long long int)(intptr_t)(void *)&audio_prerender_callback,
-             (long long int)(intptr_t)(void *)&audio_postrender_callback,
-             (long long int)(intptr_t)(void *)&self->frame_);
-
-    const char *const vlc_args[] = {
-        "-I", "dummy", // Don't use any interface
-        "--ignore-config", // Don't use VLC's config
-//        "--extraintf=logger",     // Log anything
-//        "--verbose=2",            // Be verbose
-        "--sout", smem_options // Stream to memory
-    };
-
-    self->video_data_.vlc_instance_ = libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
     self->video_data_.vlc_media_player_ = NULL;
 
     return self;
@@ -150,30 +101,34 @@ VideoPlayer *video_player_new()
 
 static void video_player_init(VideoPlayer *self)
 {
-    // The fuck is the point of this function???
-    UNUSED(self)
+    const char *const vlc_args[] = {
+        "-I", "dummy", // Don't use any interface
+        "--ignore-config", // Don't use VLC's config
+        "--no-audio", /* skip any audio track */
+        "--no-xlib", /* tell VLC to not use Xlib */
+//        "--extraintf=logger",     // Log anything
+//        "--verbose=2",            // Be verbose
+    };
+
+    self->video_data_.vlc_instance_ = libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
 }
 
 static void video_player_class_init(VideoPlayerClass *klass)
 {
-    G_OBJECT_CLASS(klass)->dispose = video_player_dispose;
+    G_OBJECT_CLASS(klass)->finalize = video_player_finalize;
 }
 
-static void video_player_dispose(GObject *video_player)
+static void video_player_finalize(GObject *video_player)
 {
     VideoPlayer *self = VIDEO_PLAYER(video_player);
 
     libvlc_release(self->video_data_.vlc_instance_);
     libvlc_media_player_release(self->video_data_.vlc_media_player_);
 
-    g_free(self->frame_.buffer_);
-
-    // Explicitly call parent's dispose aswell
-    VideoPlayerClass *klass = (VideoPlayerClass *)G_OBJECT_GET_CLASS(video_player);
-    klass->parent.dispose(video_player);
+    G_OBJECT_CLASS(video_player_parent_class)->finalize(video_player);
 }
 
-void video_player_set_callback(VideoPlayer *self, RenderCallback cb, void *callback_data)
+void video_player_set_callback(VideoPlayer *self, RenderCallback cb, gpointer callback_data)
 {
     self->cb_ = cb;
     self->cb_data_ = callback_data;
@@ -184,11 +139,29 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     libvlc_media_t *media = libvlc_media_new_location(self->video_data_.vlc_instance_, path);
 
     if (!self->video_data_.vlc_media_player_)
+    {
         self->video_data_.vlc_media_player_ = libvlc_media_player_new_from_media(media);
+
+        libvlc_video_set_callbacks(self->video_data_.vlc_media_player_,
+                                   vlc_video_lock_callback,
+                                   vlc_video_unlock_callback,
+                                   vlc_video_frame_display,
+                                   self);
+
+        video_player_update_format(self);
+    }
     else
         libvlc_media_player_set_media(self->video_data_.vlc_media_player_, media);
 
     libvlc_media_release(media);
+}
+
+void video_player_set_size(VideoPlayer *self, guint16 width, guint16 height)
+{
+    self->video_data_.width = width;
+    self->video_data_.height = height;
+
+    video_player_update_format(self);
 }
 
 void video_player_play(VideoPlayer *self)
@@ -227,4 +200,15 @@ gint64 video_player_get_duration(VideoPlayer *self)
     return libvlc_media_player_get_time(self->video_data_.vlc_media_player_);
 }
 
+static void video_player_update_format(VideoPlayer *self)
+{
+    if (self->video_data_.vlc_media_player_)
+        libvlc_video_set_format(self->video_data_.vlc_media_player_,
+                                VIDEO_OUTPUT_TYPE,
+                                self->video_data_.width,
+                                self->video_data_.height,
+                                self->video_data_.width * 4);
+}
+
 C_STYLE_END
+

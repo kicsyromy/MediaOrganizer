@@ -12,7 +12,7 @@ TEMPLATE = lib
 DEFINES += MO_LIB
 
 CONFIG += link_pkgconfig
-PKGCONFIG += glib-2.0 libvlc
+PKGCONFIG += gobject-2.0 glib-2.0 libvlc
 
 SOURCES += mo.cpp \
     videoplayer.cpp
