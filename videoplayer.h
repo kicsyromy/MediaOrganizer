@@ -33,10 +33,7 @@ MO_API  void video_player_set_muted(VideoPlayer *player, bool muted);
 MO_API  gint64 video_player_get_duration(VideoPlayer *player);
 
 /* Static methods */
-//gsize video_player_generate_thumbnail(const char *path,
-//                         const char *format,
-//                         unsigned char *&buffer,
-//                         const int offset);
+//MO_API  FrameBufferType video_player_generate_thumbnail(const gchar *path, gfloat position);
 
 C_STYLE_END
 

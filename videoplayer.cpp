@@ -47,7 +47,6 @@ static void video_player_init(VideoPlayer *self);
 static void video_player_class_init(VideoPlayerClass *klass);
 static void video_player_finalize(GObject *video_player);
 
-
 /* Private methods */
 static void video_player_update_format(VideoPlayer *self);
 
@@ -131,9 +130,31 @@ void video_player_set_callback(VideoPlayer *self, RenderCallback cb, gpointer ca
 
 void video_player_set_source(VideoPlayer *self, const gchar *path)
 {
-    libvlc_media_t *media = libvlc_media_new_location(self->video_data_.vlc_instance_, path);
+    libvlc_instance_t *vlc_instance = self->video_data_.vlc_instance_;
+    libvlc_media_player_t *media_player = self->video_data_.vlc_media_player_;
 
-    if (!self->video_data_.vlc_media_player_)
+    if (media_player && libvlc_media_player_is_playing(media_player))
+        libvlc_media_player_stop(media_player);
+
+    libvlc_media_t *media = libvlc_media_new_location(vlc_instance, path);
+    libvlc_media_parse(media);
+
+    libvlc_media_track_info_t *track_info = NULL;
+
+    int track_info_size = libvlc_media_get_tracks_info(media, &track_info);
+
+    for (int i = 0; i < track_info_size; ++i)
+        if (track_info[i].i_type == libvlc_track_video)
+        {
+            self->video_data_.width = track_info[i].u.video.i_width;
+            self->video_data_.height = track_info[i].u.video.i_height;
+
+            break;
+        }
+
+    g_free(track_info);
+
+    if (!media_player)
     {
         self->video_data_.vlc_media_player_ = libvlc_media_player_new_from_media(media);
 
@@ -176,16 +197,12 @@ void video_player_set_position(VideoPlayer *self, const gint64 position)
 
 void video_player_set_volume(VideoPlayer *self, const double volume)
 {
-    // Has something to do with some callbacks that I have no idea how to use
-    // YET!
     UNUSED(self)
     UNUSED(volume)
 }
 
 void video_player_set_muted(VideoPlayer *self, bool muted)
 {
-    // Has something to do with some callbacks that I have no idea how to use
-    // YET!
     UNUSED(self)
     UNUSED(muted)
 }
@@ -204,6 +221,11 @@ static void video_player_update_format(VideoPlayer *self)
                                 self->video_data_.height,
                                 self->video_data_.width * 4);
 }
+
+//FrameBufferType video_player_generate_thumbnail(const gchar *path, gfloat position)
+//{
+//    FrameBufferType frame_buffer = (FrameBufferType)g_malloc(PixelDepthType);
+//}
 
 C_STYLE_END
 
