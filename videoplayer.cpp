@@ -7,16 +7,14 @@ C_STYLE_BEGIN
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_player.h>
 
-#define G_CLASS(klass)  G_TYPE_CHECK_CLASS_CAST((klass), G_TYPE_OBJECT, GObjectClass)
-
+/* Every frame will be renderd in 32bit bitmap format */
 static const char *VIDEO_OUTPUT_TYPE = "RV32";
-typedef guint32 * ActualPixelDepthType;
+typedef guint32 * PixelDepthType;
 
 struct Frame
 {
     GMutex mutex_;
-    /* Every frame will be renderd in 32bit bitmap format */
-    PixelDepthType buffer_;
+    FrameBufferType buffer_;
 };
 
 struct VideoData
@@ -58,9 +56,9 @@ static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
     VideoPlayer *self = (VideoPlayer *)data;
     g_mutex_lock(&self->frame_.mutex_);
 
-    self->frame_.buffer_ = (PixelDepthType)g_malloc(self->video_data_.width *
+    self->frame_.buffer_ = (FrameBufferType)g_malloc(self->video_data_.width *
                                                self->video_data_.height *
-                                               sizeof(ActualPixelDepthType));
+                                               sizeof(PixelDepthType));
 
     *frame_buffer_out = self->frame_.buffer_;
 
@@ -102,12 +100,9 @@ VideoPlayer *video_player_new()
 static void video_player_init(VideoPlayer *self)
 {
     const char *const vlc_args[] = {
-        "-I", "dummy", // Don't use any interface
-        "--ignore-config", // Don't use VLC's config
-        "--no-audio", /* skip any audio track */
-        "--no-xlib", /* tell VLC to not use Xlib */
-//        "--extraintf=logger",     // Log anything
-//        "--verbose=2",            // Be verbose
+        "-I", "dummy",
+        "--ignore-config",
+        "--no-xlib"
     };
 
     self->video_data_.vlc_instance_ = libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);

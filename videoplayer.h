@@ -13,8 +13,8 @@ C_STYLE_BEGIN
 typedef struct _VideoPlayer         VideoPlayer;
 typedef struct _VideoPlayerClass    VideoPlayerClass;
 
-typedef guint8 * PixelDepthType;
-typedef void (*RenderCallback)(PixelDepthType frame_buffer, guint16 width, guint16 height, gpointer data);
+typedef guint8 * FrameBufferType;
+typedef void (*RenderCallback)(FrameBufferType frame_buffer, guint16 width, guint16 height, gpointer data);
 
 MO_API  GType video_player_get_type();
 
