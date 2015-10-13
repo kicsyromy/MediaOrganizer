@@ -61,15 +61,16 @@ static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 
     *frame_buffer_out = self->frame_.buffer_;
 
-    return NULL; /* picture identifier */
+    return NULL;
 }
 
 static void vlc_video_unlock_callback(void *data, void *id, void *const *frame_buffer_in)
 {
+    VideoPlayer *self = (VideoPlayer *)data;
+
     UNUSED(id)
     UNUSED(frame_buffer_in)
 
-    VideoPlayer *self = (VideoPlayer *)data;
     g_mutex_unlock(&self->frame_.mutex_);
 
     self->cb_(self->frame_.buffer_,
@@ -101,7 +102,12 @@ static void video_player_init(VideoPlayer *self)
     const char *const vlc_args[] = {
         "-I", "dummy",
         "--ignore-config",
-        "--no-xlib"
+        "--no-xlib",
+        "--no-sub-autodetect-file",
+        "--no-inhibit",
+        "--no-disable-screensaver",
+        "--no-snapshot-preview",
+        "--no-stats"
     };
 
     self->video_data_.vlc_instance_ = libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
@@ -133,17 +139,20 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     libvlc_instance_t *vlc_instance = self->video_data_.vlc_instance_;
     libvlc_media_player_t *media_player = self->video_data_.vlc_media_player_;
 
+    libvlc_media_t *media = NULL;
+    libvlc_media_track_info_t *track_info = NULL;
+    int track_info_size = 0;
+    int i = 0;
+
     if (media_player && libvlc_media_player_is_playing(media_player))
         libvlc_media_player_stop(media_player);
 
-    libvlc_media_t *media = libvlc_media_new_location(vlc_instance, path);
+    media = libvlc_media_new_path(vlc_instance, path);
     libvlc_media_parse(media);
 
-    libvlc_media_track_info_t *track_info = NULL;
+    track_info_size = libvlc_media_get_tracks_info(media, &track_info);
 
-    int track_info_size = libvlc_media_get_tracks_info(media, &track_info);
-
-    for (int i = 0; i < track_info_size; ++i)
+    for (i = 0; i < track_info_size; ++i)
         if (track_info[i].i_type == libvlc_track_video)
         {
             self->video_data_.width = track_info[i].u.video.i_width;
@@ -222,10 +231,47 @@ static void video_player_update_format(VideoPlayer *self)
                                 self->video_data_.width * 4);
 }
 
-//FrameBufferType video_player_generate_thumbnail(const gchar *path, gfloat position)
-//{
-//    FrameBufferType frame_buffer = (FrameBufferType)g_malloc(PixelDepthType);
-//}
+/* Static methods */
+int video_player_generate_thumbnail(const gchar *video_path,
+                                    const gchar *thumbnail_path,
+                                    const gfloat position,
+                                    const guint16 width,
+                                    const guint16 height)
+{
+    gfloat pos = (position > 1) ? 1 : (position < 0) ? 0 : position;
+    libvlc_instance_t *vlc_instance = NULL;
+    libvlc_media_t *media = NULL;
+    libvlc_media_player_t *media_player = NULL;
+    int return_value = 0;
+
+    static const char* const args[] = {
+        "--intf", "dummy",
+        "--vout", "dummy",
+        "--no-audio",
+        "--no-video-title-show",
+        "--no-stats",
+        "--no-sub-autodetect-file",
+        "--no-inhibit",
+        "--no-disable-screensaver",
+        "--no-snapshot-preview",
+        "--verbose=2"
+    };
+
+    vlc_instance = libvlc_new(sizeof args / sizeof *args, args);
+    media = libvlc_media_new_path(vlc_instance, video_path);
+    media_player = libvlc_media_player_new_from_media(media);
+
+    libvlc_media_player_play(media_player);
+    libvlc_media_player_set_position(media_player, pos);
+    return_value = libvlc_video_take_snapshot(media_player, 0, thumbnail_path, width, height);
+    libvlc_media_player_stop(media_player);
+
+    libvlc_media_release(media);
+    libvlc_media_player_release(media_player);
+    libvlc_release(vlc_instance);
+
+    return return_value;
+}
 
 C_STYLE_END
 
