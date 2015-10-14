@@ -15,8 +15,11 @@ CONFIG += link_pkgconfig
 PKGCONFIG += gobject-2.0 glib-2.0 libvlc
 
 SOURCES += mo.cpp \
-    videoplayer.cpp
+    videoplayer.cpp \
+    videoframe.cpp
 
 HEADERS += mo.h \
     mo_global.h \
-    videoplayer.h
+    videoplayer.h \
+    videoframe.h \
+    videoframe_def.h

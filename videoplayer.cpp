@@ -7,6 +7,9 @@ C_STYLE_BEGIN
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_player.h>
 
+#include "videoframe.h"
+#include "videoframe_def.h"
+
 /* Every frame will be renderd in 32bit bitmap format */
 static const char *VIDEO_OUTPUT_TYPE = "RV32";
 typedef guint32 * PixelDepthType;
@@ -14,7 +17,7 @@ typedef guint32 * PixelDepthType;
 struct Frame
 {
     GMutex mutex_;
-    FrameBufferType buffer_;
+    VideoFrame *last_frame_;
 };
 
 struct VideoData
@@ -45,6 +48,7 @@ struct _VideoPlayerClass
 G_DEFINE_TYPE(VideoPlayer, video_player, G_TYPE_OBJECT)
 static void video_player_init(VideoPlayer *self);
 static void video_player_class_init(VideoPlayerClass *klass);
+static void video_player_dispose(GObject *video_player);
 static void video_player_finalize(GObject *video_player);
 
 /* Private methods */
@@ -53,13 +57,24 @@ static void video_player_update_format(VideoPlayer *self);
 static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 {
     VideoPlayer *self = (VideoPlayer *)data;
+    gsize buffer_size = 0;
+
     g_mutex_lock(&self->frame_.mutex_);
 
-    self->frame_.buffer_ = (FrameBufferType)g_malloc(self->video_data_.width *
-                                               self->video_data_.height *
-                                               sizeof(PixelDepthType));
+    buffer_size = self->video_data_.width *
+                  self->video_data_.height *
+                  sizeof(PixelDepthType);
 
-    *frame_buffer_out = self->frame_.buffer_;
+    if (self->frame_.last_frame_)
+        g_object_unref(self->frame_.last_frame_);
+
+    self->frame_.last_frame_ = VIDEO_FRAME(g_object_new(VIDEO_FRAME_TYPE, NULL));
+    self->frame_.last_frame_->buffer_ = (FrameBufferType)g_malloc(buffer_size);
+    self->frame_.last_frame_->buffer_size_ = buffer_size;
+    self->frame_.last_frame_->width_ = self->video_data_.width;
+    self->frame_.last_frame_->height_ = self->video_data_.height;
+
+    *frame_buffer_out = self->frame_.last_frame_->buffer_;
 
     return NULL;
 }
@@ -71,12 +86,12 @@ static void vlc_video_unlock_callback(void *data, void *id, void *const *frame_b
     UNUSED(id)
     UNUSED(frame_buffer_in)
 
-    g_mutex_unlock(&self->frame_.mutex_);
-
-    self->cb_(self->frame_.buffer_,
+    self->cb_(self->frame_.last_frame_,
               self->video_data_.width,
               self->video_data_.height,
               self->cb_data_);
+
+    g_mutex_unlock(&self->frame_.mutex_);
 }
 
 static void vlc_video_frame_display(void *data, void *id)
@@ -91,7 +106,7 @@ VideoPlayer *video_player_new()
 
     self->cb_ = NULL;
     self->cb_data_ = NULL;
-    self->frame_.buffer_ = NULL;
+    self->frame_.last_frame_ = NULL;
     self->video_data_.vlc_media_player_ = NULL;
 
     return self;
@@ -116,6 +131,16 @@ static void video_player_init(VideoPlayer *self)
 static void video_player_class_init(VideoPlayerClass *klass)
 {
     G_OBJECT_CLASS(klass)->finalize = video_player_finalize;
+    G_OBJECT_CLASS(klass)->dispose = video_player_dispose;
+}
+
+static void video_player_dispose(GObject *video_player)
+{
+    VideoPlayer *self = VIDEO_PLAYER(video_player);
+
+    g_clear_object(&self->frame_.last_frame_);
+
+    G_OBJECT_CLASS(video_player_parent_class)->dispose(video_player);
 }
 
 static void video_player_finalize(GObject *video_player)
