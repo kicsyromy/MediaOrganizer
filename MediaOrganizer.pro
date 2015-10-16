@@ -11,15 +11,25 @@ TEMPLATE = lib
 
 DEFINES += MO_LIB
 
+INCLUDEPATH += \
+    inc \
+    pub
+
+PUBLIC_HEADERS += \
+    pub/mo_global.h \
+    pub/videoplayer.h \
+    pub/videoframe.h
+
+PRIVATE_HEADERS += \
+    inc/videoframe_def.h
+
 CONFIG += link_pkgconfig
 PKGCONFIG += gobject-2.0 glib-2.0 libvlc
 
-SOURCES += mo.cpp \
-    videoplayer.cpp \
-    videoframe.cpp
+SOURCES += \
+    src/videoframe.c \
+    src/videoplayer.c
 
-HEADERS += mo.h \
-    mo_global.h \
-    videoplayer.h \
-    videoframe.h \
-    videoframe_def.h
+HEADERS += \
+    $$PUBLIC_HEADERS \
+    $$PRIVATE_HEADERS

@@ -25,7 +25,6 @@ static void video_frame_finalize(GObject *video_frame)
     UNUSED(video_frame)
 }
 
-
 FrameBufferType video_frame_get_buffer(VideoFrame *frame, gsize *buffer_size)
 {
     UNUSED(frame)
