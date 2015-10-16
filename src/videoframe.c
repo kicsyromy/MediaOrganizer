@@ -12,7 +12,10 @@ static void video_frame_finalize(GObject *video_frame);
 
 static void video_frame_init(VideoFrame *self)
 {
-    UNUSED(self)
+    self->buffer_ = NULL;
+    self->buffer_size_ = 0;
+    self->width_ = 0;
+    self->height_ = 0;
 }
 
 static void video_frame_class_init(VideoFrameClass *klass)
@@ -22,23 +25,29 @@ static void video_frame_class_init(VideoFrameClass *klass)
 
 static void video_frame_finalize(GObject *video_frame)
 {
-    UNUSED(video_frame)
+    VideoFrame *self = VIDEO_FRAME(video_frame);
+
+    g_free(self->buffer_);
+    self->buffer_ = NULL;
+
+    G_OBJECT_CLASS(video_frame_parent_class)->dispose(video_frame);
 }
 
-FrameBufferType video_frame_get_buffer(VideoFrame *frame, gsize *buffer_size)
+FrameBufferType video_frame_get_buffer(VideoFrame *self, gsize *buffer_size)
 {
-    UNUSED(frame)
-    UNUSED(buffer_size)
+    *buffer_size = self->buffer_size_;
+
+    return self->buffer_;
 }
 
-guint16 video_frame_get_width(VideoFrame *frame)
+guint16 video_frame_get_width(VideoFrame *self)
 {
-    UNUSED(frame)
+    return self->width_;
 }
 
-guint16 video_frame_get_height(VideoFrame *frame)
+guint16 video_frame_get_height(VideoFrame *self)
 {
-    UNUSED(frame)
+    return self->height_;
 }
 
 C_STYLE_END

@@ -235,7 +235,7 @@ void video_player_set_volume(VideoPlayer *self, const double volume)
     UNUSED(volume)
 }
 
-void video_player_set_muted(VideoPlayer *self, bool muted)
+void video_player_set_muted(VideoPlayer *self, int muted)
 {
     UNUSED(self)
     UNUSED(muted)

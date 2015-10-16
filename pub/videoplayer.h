@@ -29,7 +29,7 @@ MO_API  void video_player_play(VideoPlayer *player);
 MO_API  void video_player_pause(VideoPlayer *player);
 MO_API  void video_player_set_position(VideoPlayer *player, const gint64 position);
 MO_API  void video_player_set_volume(VideoPlayer *player, const double volume);
-MO_API  void video_player_set_muted(VideoPlayer *player, bool muted);
+MO_API  void video_player_set_muted(VideoPlayer *player, int muted);
 MO_API  gint64 video_player_get_duration(VideoPlayer *player);
 
 /* Static methods */
