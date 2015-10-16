@@ -8,7 +8,7 @@ C_STYLE_BEGIN
 #include <vlc/libvlc_media_player.h>
 
 #include "videoframe.h"
-#include "videoframe_def.h"
+#include "videoframe_p.h"
 
 /* Every frame will be renderd in 32bit bitmap format */
 static const char *VIDEO_OUTPUT_TYPE = "RV32";

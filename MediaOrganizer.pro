@@ -17,11 +17,11 @@ INCLUDEPATH += \
 
 PUBLIC_HEADERS += \
     pub/mo_global.h \
-    pub/videoplayer.h \
-    pub/videoframe.h
+    pub/videoframe.h \
+    pub/videoplayer.h
 
 PRIVATE_HEADERS += \
-    inc/videoframe_def.h
+    inc/videoframe_p.h
 
 CONFIG += link_pkgconfig
 PKGCONFIG += gobject-2.0 glib-2.0 libvlc

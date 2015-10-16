@@ -2,8 +2,7 @@
 
 C_STYLE_BEGIN
 
-#include "videoframe.h"
-#include "videoframe_def.h"
+#include "videoframe_p.h"
 
 G_DEFINE_TYPE(VideoFrame, video_frame, G_TYPE_OBJECT)
 static void video_frame_init(VideoFrame *self);
