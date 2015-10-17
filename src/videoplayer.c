@@ -299,7 +299,6 @@ void video_player_set_muted(VideoPlayer *self, int muted)
     UNUSED(muted)
 }
 
-
 static void video_player_update_format(VideoPlayer *self)
 {
     if (self->video_data_.vlc_media_player_)

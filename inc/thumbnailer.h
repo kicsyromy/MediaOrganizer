@@ -15,13 +15,13 @@ typedef struct _ThumbnailerClass    ThumbnailerClass;
 
 typedef struct _VideoFrame          VideoFrame;
 
-MO_API  GType thumbnailer_get_type();
+GType thumbnailer_get_type();
 
-MO_API  Thumbnailer *thumbnailer_new();
-MO_API  void thumbnailer_set_source(Thumbnailer *thumbnailer, const gchar *path);
-MO_API  void thumbnailer_set_size(Thumbnailer *thumbnailer, const guint16 width, const guint16 height);
-MO_API  void thumbnailer_set_position(Thumbnailer *thumbnailer, const gfloat position);
-MO_API  VideoFrame *thumbnailer_generate_thumbnail(Thumbnailer *thumbnailer);
+Thumbnailer *thumbnailer_new();
+void thumbnailer_set_source(Thumbnailer *thumbnailer, const gchar *path);
+void thumbnailer_set_size(Thumbnailer *thumbnailer, const guint16 width, const guint16 height);
+void thumbnailer_set_position(Thumbnailer *thumbnailer, const gfloat position);
+VideoFrame *thumbnailer_generate_thumbnail(Thumbnailer *thumbnailer);
 
 C_STYLE_END
 
