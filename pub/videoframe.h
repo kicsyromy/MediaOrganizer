@@ -17,8 +17,8 @@ typedef guint8 * FrameBufferType;
 
 MO_API  GType video_frame_get_type();
 
-/* Public methods */
 MO_API  FrameBufferType video_frame_get_buffer(VideoFrame *frame, gsize *buffer_size);
+MO_API  VideoFrame *video_frame_copy(VideoFrame *frame);
 MO_API  guint16 video_frame_get_width(VideoFrame *frame);
 MO_API  guint16 video_frame_get_height(VideoFrame *frame);
 

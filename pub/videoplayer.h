@@ -14,30 +14,32 @@ typedef struct _VideoPlayer         VideoPlayer;
 typedef struct _VideoPlayerClass    VideoPlayerClass;
 
 typedef struct _VideoFrame          VideoFrame;
-typedef void (*RenderCallback)(VideoFrame *frame, guint16 width, guint16 height, gpointer data);
+typedef void (*RenderCallback)(VideoFrame *frame, gpointer data);
+typedef void (*PositionChangedCallback)(gfloat new_position, gpointer data);
 
 MO_API  GType video_player_get_type();
 
-/* Constructor and destructor */
 MO_API  VideoPlayer *video_player_new();
-
-/* Public methods */
-MO_API  void video_player_set_callback(VideoPlayer *player, RenderCallback cb, gpointer callback_data);
+MO_API  void video_player_set_callback_data(VideoPlayer *player, gpointer callback_data);
+MO_API  void video_player_set_render_callback(VideoPlayer *player, RenderCallback cb);
+MO_API  void video_player_set_position_changed_callback(VideoPlayer *player, PositionChangedCallback cb);
 MO_API  void video_player_set_source(VideoPlayer *player, const gchar *path);
-MO_API  void video_player_set_size(VideoPlayer *player, guint16 width, guint16 height);
+MO_API  void video_player_set_size(VideoPlayer *player, const guint16 width, const guint16 height);
 MO_API  void video_player_play(VideoPlayer *player);
 MO_API  void video_player_pause(VideoPlayer *player);
-MO_API  void video_player_set_position(VideoPlayer *player, const gint64 position);
+MO_API  void video_player_stop(VideoPlayer *player);
+MO_API  void video_player_set_position(VideoPlayer *player, const gfloat position);
+MO_API  void video_player_set_time(VideoPlayer *player, const gint64 position);
+MO_API  gint64 video_player_get_current_time(VideoPlayer *player);
+MO_API  gint64 video_player_get_duration(VideoPlayer *player);
 MO_API  void video_player_set_volume(VideoPlayer *player, const double volume);
 MO_API  void video_player_set_muted(VideoPlayer *player, int muted);
-MO_API  gint64 video_player_get_duration(VideoPlayer *player);
 
 /* Static methods */
-MO_API  int video_player_generate_thumbnail(const gchar *video_path,
-                                            const gchar *thumbnail_path,
-                                            const gfloat position,
-                                            const guint16 width,
-                                            const guint16 height);
+MO_API  VideoFrame *video_player_generate_thumbnail(const gchar *video_path,
+                                                    const gfloat position,
+                                                    const guint16 width,
+                                                    const guint16 height);
 
 C_STYLE_END
 

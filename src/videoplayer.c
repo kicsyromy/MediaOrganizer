@@ -1,14 +1,14 @@
 #include "videoplayer.h"
 
-C_STYLE_BEGIN
-
 #include <glib.h>
 #include <vlc/libvlc.h>
 #include <vlc/libvlc_media.h>
 #include <vlc/libvlc_media_player.h>
+#include <vlc/libvlc_events.h>
 
 #include "videoframe.h"
 #include "videoframe_p.h"
+#include "thumbnailer.h"
 
 /* Every frame will be renderd in 32bit bitmap format */
 static const char *VIDEO_OUTPUT_TYPE = "RV32";
@@ -24,9 +24,18 @@ struct VideoData
 {
     libvlc_instance_t *vlc_instance_;
     libvlc_media_player_t *vlc_media_player_;
+    libvlc_event_manager_t *vlc_event_mgr_;
 
     gint16 width;
     gint16 height;
+};
+
+struct Callbacks
+{
+    GMutex mutex_;
+    gpointer callback_data_;
+    RenderCallback render_cb_;
+    PositionChangedCallback pos_changed_cb_;
 };
 
 struct _VideoPlayer
@@ -34,8 +43,7 @@ struct _VideoPlayer
     GObject parent;
 
     /* Members */
-    RenderCallback cb_;
-    gpointer cb_data_;
+    struct Callbacks callbacks_;
     struct Frame frame_;
     struct VideoData video_data_;
 };
@@ -53,6 +61,7 @@ static void video_player_finalize(GObject *video_player);
 
 /* Private methods */
 static void video_player_update_format(VideoPlayer *self);
+static void video_player_set_callbacks(VideoPlayer *self);
 
 static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 {
@@ -86,10 +95,9 @@ static void vlc_video_unlock_callback(void *data, void *id, void *const *frame_b
     UNUSED(id)
     UNUSED(frame_buffer_in)
 
-    self->cb_(self->frame_.last_frame_,
-              self->video_data_.width,
-              self->video_data_.height,
-              self->cb_data_);
+    if (self->callbacks_.render_cb_)
+        self->callbacks_.render_cb_(self->frame_.last_frame_,
+                                    self->callbacks_.callback_data_);
 
     g_mutex_unlock(&self->frame_.mutex_);
 }
@@ -100,14 +108,38 @@ static void vlc_video_frame_display(void *data, void *id)
     UNUSED(id)
 }
 
+static void vlc_event_callback(const libvlc_event_t *event, void *data)
+{
+    VideoPlayer *self = (VideoPlayer *)data;
+
+    g_mutex_lock(&self->callbacks_.mutex_);
+
+    switch (event->type)
+    {
+    default:
+        break;
+
+    case libvlc_MediaPlayerPositionChanged:
+        if (self->callbacks_.pos_changed_cb_)
+            self->callbacks_.pos_changed_cb_(event->u.media_player_position_changed.new_position,
+                                             self->callbacks_.callback_data_);
+    }
+
+    g_mutex_unlock(&self->callbacks_.mutex_);
+}
+
 VideoPlayer *video_player_new()
 {
     VideoPlayer *self = VIDEO_PLAYER(g_object_new(VIDEO_PLAYER_TYPE, NULL));
 
-    self->cb_ = NULL;
-    self->cb_data_ = NULL;
+    g_mutex_init(&self->callbacks_.mutex_);
+    self->callbacks_.callback_data_ = NULL;
+    self->callbacks_.render_cb_ = NULL;
+    self->callbacks_.pos_changed_cb_ = NULL;
+    g_mutex_init(&self->frame_.mutex_);
     self->frame_.last_frame_ = NULL;
     self->video_data_.vlc_media_player_ = NULL;
+    self->video_data_.vlc_event_mgr_ = NULL;
 
     return self;
 }
@@ -153,10 +185,19 @@ static void video_player_finalize(GObject *video_player)
     G_OBJECT_CLASS(video_player_parent_class)->finalize(video_player);
 }
 
-void video_player_set_callback(VideoPlayer *self, RenderCallback cb, gpointer callback_data)
+void video_player_set_callback_data(VideoPlayer *self, gpointer callback_data)
 {
-    self->cb_ = cb;
-    self->cb_data_ = callback_data;
+    self->callbacks_.callback_data_ = callback_data;
+}
+
+void video_player_set_render_callback(VideoPlayer *self, RenderCallback cb)
+{
+    self->callbacks_.render_cb_ = cb;
+}
+
+void video_player_set_position_changed_callback(VideoPlayer *self, PositionChangedCallback cb)
+{
+    self->callbacks_.pos_changed_cb_ = cb;
 }
 
 void video_player_set_source(VideoPlayer *self, const gchar *path)
@@ -191,13 +232,10 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     if (!media_player)
     {
         self->video_data_.vlc_media_player_ = libvlc_media_player_new_from_media(media);
+        self->video_data_.vlc_event_mgr_ =
+                libvlc_media_player_event_manager(self->video_data_.vlc_media_player_);
 
-        libvlc_video_set_callbacks(self->video_data_.vlc_media_player_,
-                                   vlc_video_lock_callback,
-                                   vlc_video_unlock_callback,
-                                   vlc_video_frame_display,
-                                   self);
-
+        video_player_set_callbacks(self);
         video_player_update_format(self);
     }
     else
@@ -206,7 +244,7 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     libvlc_media_release(media);
 }
 
-void video_player_set_size(VideoPlayer *self, guint16 width, guint16 height)
+void video_player_set_size(VideoPlayer *self, const guint16 width, const guint16 height)
 {
     self->video_data_.width = width;
     self->video_data_.height = height;
@@ -224,9 +262,29 @@ void video_player_pause(VideoPlayer *self)
     libvlc_media_player_pause(self->video_data_.vlc_media_player_);
 }
 
-void video_player_set_position(VideoPlayer *self, const gint64 position)
+void video_player_stop(VideoPlayer *self)
+{
+    libvlc_media_player_stop(self->video_data_.vlc_media_player_);
+}
+
+void video_player_set_position(VideoPlayer *self, const gfloat position)
+{
+    libvlc_media_player_set_position(self->video_data_.vlc_media_player_, position);
+}
+
+void video_player_set_time(VideoPlayer *self, const gint64 position)
 {
     libvlc_media_player_set_time(self->video_data_.vlc_media_player_, position);
+}
+
+gint64 video_player_get_current_time(VideoPlayer *self)
+{
+    return libvlc_media_player_get_time(self->video_data_.vlc_media_player_);
+}
+
+gint64 video_player_get_duration(VideoPlayer *self)
+{
+    return libvlc_media_player_get_length(self->video_data_.vlc_media_player_);
 }
 
 void video_player_set_volume(VideoPlayer *self, const double volume)
@@ -241,10 +299,6 @@ void video_player_set_muted(VideoPlayer *self, int muted)
     UNUSED(muted)
 }
 
-gint64 video_player_get_duration(VideoPlayer *self)
-{
-    return libvlc_media_player_get_time(self->video_data_.vlc_media_player_);
-}
 
 static void video_player_update_format(VideoPlayer *self)
 {
@@ -256,47 +310,34 @@ static void video_player_update_format(VideoPlayer *self)
                                 self->video_data_.width * 4);
 }
 
-/* Static methods */
-int video_player_generate_thumbnail(const gchar *video_path,
-                                    const gchar *thumbnail_path,
-                                    const gfloat position,
-                                    const guint16 width,
-                                    const guint16 height)
+static void video_player_set_callbacks(VideoPlayer *self)
 {
-    gfloat pos = (position > 1) ? 1 : (position < 0) ? 0 : position;
-    libvlc_instance_t *vlc_instance = NULL;
-    libvlc_media_t *media = NULL;
-    libvlc_media_player_t *media_player = NULL;
-    int return_value = 0;
+    libvlc_event_attach(self->video_data_.vlc_event_mgr_,
+                        libvlc_MediaPlayerPositionChanged,
+                        vlc_event_callback,
+                        self);
 
-    static const char* const args[] = {
-        "--intf", "dummy",
-        "--vout", "dummy",
-        "--no-audio",
-        "--no-video-title-show",
-        "--no-stats",
-        "--no-sub-autodetect-file",
-        "--no-inhibit",
-        "--no-disable-screensaver",
-        "--no-snapshot-preview",
-        "--verbose=2"
-    };
-
-    vlc_instance = libvlc_new(sizeof args / sizeof *args, args);
-    media = libvlc_media_new_path(vlc_instance, video_path);
-    media_player = libvlc_media_player_new_from_media(media);
-
-    libvlc_media_player_play(media_player);
-    libvlc_media_player_set_position(media_player, pos);
-    return_value = libvlc_video_take_snapshot(media_player, 0, thumbnail_path, width, height);
-    libvlc_media_player_stop(media_player);
-
-    libvlc_media_release(media);
-    libvlc_media_player_release(media_player);
-    libvlc_release(vlc_instance);
-
-    return return_value;
+    libvlc_video_set_callbacks(self->video_data_.vlc_media_player_,
+                               vlc_video_lock_callback,
+                               vlc_video_unlock_callback,
+                               vlc_video_frame_display,
+                               self);
 }
 
-C_STYLE_END
+/* Static methods */
+VideoFrame *video_player_generate_thumbnail(const gchar *video_path,
+                                            const gfloat position,
+                                            const guint16 width,
+                                            const guint16 height)
+{
+    Thumbnailer *thumbnailer = thumbnailer_new();
+    thumbnailer_set_source(thumbnailer, video_path);
+    thumbnailer_set_size(thumbnailer, width, height);
+    thumbnailer_set_position(thumbnailer, position);
 
+    VideoFrame *thumbnail = thumbnailer_generate_thumbnail(thumbnailer);
+
+    g_object_unref(thumbnailer);
+
+    return thumbnail;
+}

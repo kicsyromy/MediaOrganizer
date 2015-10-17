@@ -21,14 +21,16 @@ PUBLIC_HEADERS += \
     pub/videoplayer.h
 
 PRIVATE_HEADERS += \
-    inc/videoframe_p.h
+    inc/videoframe_p.h \
+    inc/thumbnailer.h
 
 CONFIG += link_pkgconfig
 PKGCONFIG += gobject-2.0 glib-2.0 libvlc
 
 SOURCES += \
     src/videoframe.c \
-    src/videoplayer.c
+    src/videoplayer.c \
+    src/thumbnailer.c
 
 HEADERS += \
     $$PUBLIC_HEADERS \
