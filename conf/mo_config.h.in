@@ -1,0 +1,4 @@
+#define MediaOrganizer_VERSION_MAJOR @MediaOrganizer_VERSION_MAJOR@
+#define MediaOrganizer_VERSION_MINOR @MediaOrganizer_VERSION_MINOR@
+#define MediaOrganizer_VERSION_PATCH @MediaOrganizer_VERSION_PATCH@
+
