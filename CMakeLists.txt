@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(MediaOrganizer)
+add_definitions(-DMO_LIB)
 
 # Version number
 set(MediaOrganizer_VERSION_MAJOR 0)
@@ -12,11 +13,46 @@ configure_file(
     "${PROJECT_BINARY_DIR}/mo_config.h"
 )
 
-# Use pkg-config
-find_package(PkgConfig)
-pkg_search_module(GOBJECT REQUIRED gobject-2.0)
-pkg_search_module(GLIB2   REQUIRED glib-2.0)
-pkg_search_module(LIBVLC  REQUIRED libvlc)
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	# Use pkg-config
+	find_package(PkgConfig)
+	pkg_search_module(GOBJECT REQUIRED gobject-2.0)
+	pkg_search_module(GLIB2   REQUIRED glib-2.0)
+	pkg_search_module(LIBVLC  REQUIRED libvlc)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(TargetArch_DIR 		"${PROJECT_SOURCE_DIR}/cmake")
+	set(ProductVersion_DIR  "${PROJECT_SOURCE_DIR}/cmake")
+	
+	find_package(TargetArch)
+	target_architecture(ARCH)
+	IF(${ARCH} MATCHES "x86_64")
+		set(LIB_PATH "${PROJECT_SOURCE_DIR}/windows/lib/x64")
+	ELSE(${ARCH} MATCHES "x86_64")
+		set(LIB_PATH "${PROJECT_SOURCE_DIR}/windows/lib/win32")
+	ENDIF(${ARCH} MATCHES "x86_64")
+
+	find_package(ProductVersion)
+	generate_product_version(
+		PROJECT_INFORMATION
+		NAME "Media Organizer"
+		ICON "${PROJECT_SOURCE_DIR}/windows/project.ico"
+		VERSION_MAJOR ${MediaOrganizer_VERSION_MAJOR}
+		VERSION_MINOR ${MediaOrganizer_VERSION_MINOR}
+		VERSION_PATCH ${MediaOrganizer_VERSION_PATCH}
+		VERSION_REVISION 0
+		COMPANY_NAME "Romeo Calota"
+	)
+
+	set(GOBJECT_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/windows/include/gio-win32-2.0")
+	set(GLIB_INCLUDE_DIRS    "${PROJECT_SOURCE_DIR}/windows/include/glib-2.0")
+	set(LIBVLC_INCLUDE_DIRS  "${PROJECT_SOURCE_DIR}/windows/include")
+	
+	set(GOBJECT_LIBRARIES "${LIB_PATH}/gobject-2.0.lib")
+	set(GLIB2_LIBRARIES   "${LIB_PATH}/glib-2.0.lib")
+	set(LIBVLC_LIBRARIES  "${LIB_PATH}/libvlc.lib")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # Specify project include directories
 include_directories("${PROJECT_SOURCE_DIR}/inc")
@@ -29,7 +65,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 
 # Specify the target
-add_library(mo SHARED ${SRC_LIST})
+add_library(mo SHARED ${SRC_LIST} ${PROJECT_INFORMATION})
 
 # Create aditional files with versioning
 set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${MediaOrganizer_VERSION_MINOR}.${MediaOrganizer_VERSION_PATCH} SOVERSION ${MediaOrganizer_VERSION_MAJOR})

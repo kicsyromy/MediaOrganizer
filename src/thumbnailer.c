@@ -1,6 +1,6 @@
 #include "thumbnailer.h"
 
-#include <tgmath.h>
+#include <math.h>
 
 #include "videoplayer.h"
 #include "videoframe.h"
