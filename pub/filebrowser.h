@@ -23,7 +23,7 @@ MO_API  void file_browser_to_root(FileBrowser *browser);
 MO_API  const gchar *file_browser_current_path(FileBrowser *browser);
 MO_API  const gchar *file_browser_current_dir(FileBrowser *browser);
 MO_API  guint64 file_browser_current_dir_file_count(FileBrowser *browser);
-MO_API  const gchar **file_browser_current_dir_get_content(FileBrowser *browser);
+MO_API  gchar **file_browser_current_dir_get_content(FileBrowser *browser);
 
 C_STYLE_END
 
