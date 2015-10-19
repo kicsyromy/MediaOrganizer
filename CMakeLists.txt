@@ -7,52 +7,16 @@ set(MediaOrganizer_VERSION_MAJOR 0)
 set(MediaOrganizer_VERSION_MINOR 1)
 set(MediaOrganizer_VERSION_PATCH 0)
 
+set(MediaOrganizer_PRIVATE_HEADERS "${PROJECT_SOURCE_DIR}/inc")
+set(MediaOrganizer_PUBLIC_HEADERS  "${PROJECT_SOURCE_DIR}/pub")
+
 # Generate configuration file with the proper version number
 configure_file(
     "${PROJECT_SOURCE_DIR}/conf/mo_config.h.in"
     "${PROJECT_BINARY_DIR}/mo_config.h"
 )
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	# Use pkg-config
-	find_package(PkgConfig)
-	pkg_search_module(GOBJECT REQUIRED gobject-2.0>=2.32.4)
-	pkg_search_module(GLIB2   REQUIRED glib-2.0>=2.32.4)
-	pkg_search_module(LIBVLC  REQUIRED libvlc>=2.0.8)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(TargetArch_DIR 		"${PROJECT_SOURCE_DIR}/cmake")
-	set(ProductVersion_DIR  "${PROJECT_SOURCE_DIR}/cmake")
-	
-	find_package(TargetArch)
-	target_architecture(ARCH)
-	IF(${ARCH} MATCHES "x86_64")
-		set(LIB_PATH "${PROJECT_SOURCE_DIR}/windows/lib/x64")
-	ELSE(${ARCH} MATCHES "x86_64")
-		set(LIB_PATH "${PROJECT_SOURCE_DIR}/windows/lib/win32")
-	ENDIF(${ARCH} MATCHES "x86_64")
-
-	find_package(ProductVersion)
-	generate_product_version(
-		PROJECT_INFORMATION
-		NAME "Media Organizer"
-		ICON "${PROJECT_SOURCE_DIR}/windows/project.ico"
-		VERSION_MAJOR ${MediaOrganizer_VERSION_MAJOR}
-		VERSION_MINOR ${MediaOrganizer_VERSION_MINOR}
-		VERSION_PATCH ${MediaOrganizer_VERSION_PATCH}
-		VERSION_REVISION 0
-		COMPANY_NAME "Romeo Calota"
-	)
-
-	set(GOBJECT_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/windows/include/gio-win32-2.0")
-	set(GLIB_INCLUDE_DIRS    "${PROJECT_SOURCE_DIR}/windows/include/glib-2.0")
-	set(LIBVLC_INCLUDE_DIRS  "${PROJECT_SOURCE_DIR}/windows/include")
-	
-	set(GOBJECT_LIBRARIES "${LIB_PATH}/gobject-2.0.lib")
-	set(GLIB2_LIBRARIES   "${LIB_PATH}/glib-2.0.lib")
-	set(LIBVLC_LIBRARIES  "${LIB_PATH}/libvlc.lib")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+include("${MediaOrganizer_SOURCE_DIR}/cmake/ProjectConfig.cmake")
 
 # Specify project include directories
 include_directories("${PROJECT_SOURCE_DIR}/inc")
@@ -74,3 +38,5 @@ set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${Me
 target_link_libraries(mo ${GOBJECT_LIBRARIES} ${GLIB2_LIBRARIES} ${LIBVLC_LIBRARIES})
 target_include_directories(mo PUBLIC ${GOBJECT_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${LIBVLC_INCLUDE_DIRS})
 target_compile_options(mo PUBLIC ${GOBJECT_CFLAGS} ${GLIB_CFLAGS} ${LIBVLC_CFLAGS})
+
+add_subdirectory(tests)
