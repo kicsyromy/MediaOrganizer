@@ -30,4 +30,5 @@ SOURCES += \
 
 HEADERS += \
     $$PUBLIC_HEADERS \
-    $$PRIVATE_HEADERS
+    $$PRIVATE_HEADERS \
+    inc/videoplayer_p.h
