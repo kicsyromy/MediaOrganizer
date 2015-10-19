@@ -16,9 +16,9 @@ configure_file(
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	# Use pkg-config
 	find_package(PkgConfig)
-	pkg_search_module(GOBJECT REQUIRED gobject-2.0)
-	pkg_search_module(GLIB2   REQUIRED glib-2.0)
-	pkg_search_module(LIBVLC  REQUIRED libvlc)
+	pkg_search_module(GOBJECT REQUIRED gobject-2.0>=2.32.4)
+	pkg_search_module(GLIB2   REQUIRED glib-2.0>=2.32.4)
+	pkg_search_module(LIBVLC  REQUIRED libvlc>=2.0.8)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -73,4 +73,4 @@ set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${Me
 # Se the apropriate compiler flags based on output from pkg-config
 target_link_libraries(mo ${GOBJECT_LIBRARIES} ${GLIB2_LIBRARIES} ${LIBVLC_LIBRARIES})
 target_include_directories(mo PUBLIC ${GOBJECT_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${LIBVLC_INCLUDE_DIRS})
-target_compile_options(mo PUBLIC ${GOBJECT_CFLAGS_OTHER} ${GLIB_CFLAGS_OTHER} ${LIBVLC_CFLAGS_OTHER})
+target_compile_options(mo PUBLIC ${GOBJECT_CFLAGS} ${GLIB_CFLAGS} ${LIBVLC_CFLAGS})
