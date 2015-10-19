@@ -11,9 +11,10 @@ typedef struct
 }
 VideoPlayerFixture;
 
-void video_player_fixture_set_up(VideoPlayerFixture *fixture, gconstpointer file_path);
-void video_player_fixture_tear_down(VideoPlayerFixture *fixture);
-void video_player_test_init(VideoPlayerFixture *fixture, gconstpointer file_path);
+void video_player_fixture_set_up(VideoPlayerFixture *fixture, gconstpointer data);
+void video_player_fixture_tear_down(VideoPlayerFixture *fixture, gconstpointer data);
+void video_player_test_init(VideoPlayerFixture *fixture, gconstpointer data);
+void video_player_test_init_with_video(VideoPlayerFixture *fixture, gconstpointer data);
 void video_player_tests_add();
 
 C_STYLE_END

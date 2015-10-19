@@ -4,6 +4,8 @@ TARGET = test_libmo
 TEMPLATE = app
 CONFIG += console
 
+DEFINES += TEST_DATA_PATH=\\\"$${_PRO_FILE_PWD_}/data/\\\"
+
 INCLUDEPATH += \
     ../pub \
     ../inc
@@ -18,4 +20,5 @@ SOURCES += \
     test_videoplayer.c
 
 HEADERS += \
-    test_videoplayer.h
+    test_videoplayer.h \
+    test_global.h

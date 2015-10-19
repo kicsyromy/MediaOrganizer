@@ -135,8 +135,10 @@ static void video_player_finalize(GObject *video_player)
 {
     VideoPlayer *self = VIDEO_PLAYER(video_player);
 
-    libvlc_release(self->video_data_.vlc_instance_);
-    libvlc_media_player_release(self->video_data_.vlc_media_player_);
+    if (self->video_data_.vlc_instance_)
+        libvlc_release(self->video_data_.vlc_instance_);
+    if (self->video_data_.vlc_media_player_)
+        libvlc_media_player_release(self->video_data_.vlc_media_player_);
 
     G_OBJECT_CLASS(video_player_parent_class)->finalize(video_player);
 }
