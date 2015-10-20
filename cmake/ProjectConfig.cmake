@@ -1,16 +1,16 @@
+find_package(PkgConfig)
+pkg_search_module(GOBJECT REQUIRED gobject-2.0>=2.32.4)
+pkg_search_module(GLIB2   REQUIRED glib-2.0>=2.32.4)
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	# Use pkg-config
-	find_package(PkgConfig)
-	pkg_search_module(GOBJECT REQUIRED gobject-2.0>=2.32.4)
-	pkg_search_module(GLIB2   REQUIRED glib-2.0>=2.32.4)
 	pkg_search_module(LIBVLC  REQUIRED libvlc>=2.0.8)
 	
-	set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.so")
+    set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.so")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(TargetArch_DIR 		"${MediaOrganizer_SOURCE_DIR}/cmake")
 	set(ProductVersion_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
+	set(TargetArch_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
 	
 	find_package(TargetArch)
 	target_architecture(ARCH)
@@ -31,14 +31,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		VERSION_REVISION 0
 		COMPANY_NAME "Romeo Calota"
 	)
-
-	set(GOBJECT_INCLUDE_DIRS "${MediaOrganizer_SOURCE_DIR}/windows/include/gio-win32-2.0")
-	set(GLIB_INCLUDE_DIRS    "${MediaOrganizer_SOURCE_DIR}/windows/include/glib-2.0")
-	set(LIBVLC_INCLUDE_DIRS  "${MediaOrganizer_SOURCE_DIR}/windows/include")
 	
-	set(GOBJECT_LIBRARIES "${LIB_PATH}/gobject-2.0.lib")
-	set(GLIB2_LIBRARIES   "${LIB_PATH}/glib-2.0.lib")
-	set(LIBVLC_LIBRARIES  "${LIB_PATH}/libvlc.lib")
+	set(LIBVLC_INCLUDE_DIRS "${MediaOrganizer_SOURCE_DIR}/windows/include")
+	set(LIBVLC_LIBRARIES "${LIB_PATH}/libvlc.dll")
 	
-    set(LIBMO "${MediaOrganizer_BINARY_DIR}/mo.lib")
+    set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.dll")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
