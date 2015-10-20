@@ -15,7 +15,7 @@ struct _Thumbnailer
     GMutex render_mutex_;
     GMutex pos_ch_mutex_;
     GCond condition_;
-    int is_correct_position;
+    gboolean is_correct_position;
 };
 
 struct _ThumbnailerClass

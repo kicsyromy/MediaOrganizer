@@ -26,8 +26,10 @@ struct VideoData
     libvlc_media_player_t *vlc_media_player_;
     libvlc_event_manager_t *vlc_event_mgr_;
 
-    gint16 width;
-    gint16 height;
+    gint16 width_;
+    gint16 height_;
+
+    guint8 volume_;
 };
 
 struct Callbacks

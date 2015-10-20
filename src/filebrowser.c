@@ -110,7 +110,7 @@ void file_browser_to_root(FileBrowser *self)
 
 const gchar *file_browser_current_path(FileBrowser *self)
 {
-    g_return_if_fail(self->root_node_ && self->current_node_);
+    g_return_val_if_fail(self->root_node_ && self->current_node_, NULL);
 
     return self->current_path_->str;
 }

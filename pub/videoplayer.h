@@ -20,6 +20,10 @@ typedef void (*PositionChangedCallback)(gfloat new_position, gpointer data);
 MO_API  GType video_player_get_type();
 
 MO_API  VideoPlayer *video_player_new();
+
+MO_API  void video_player_ref(VideoPlayer *player);
+MO_API  void video_player_unref(VideoPlayer *player);
+
 MO_API  void video_player_set_callback_data(VideoPlayer *player, gpointer callback_data);
 MO_API  void video_player_set_render_callback(VideoPlayer *player, RenderCallback cb);
 MO_API  void video_player_set_position_changed_callback(VideoPlayer *player, PositionChangedCallback cb);
@@ -32,8 +36,8 @@ MO_API  void video_player_set_position(VideoPlayer *player, const gfloat positio
 MO_API  void video_player_set_time(VideoPlayer *player, const gint64 position);
 MO_API  gint64 video_player_get_current_time(VideoPlayer *player);
 MO_API  gint64 video_player_get_duration(VideoPlayer *player);
-MO_API  void video_player_set_volume(VideoPlayer *player, const double volume);
-MO_API  void video_player_set_muted(VideoPlayer *player, int muted);
+MO_API  void video_player_set_volume(VideoPlayer *player, guint8 volume);
+MO_API  void video_player_set_muted(VideoPlayer *player, gboolean muted);
 
 /* Static methods */
 MO_API  VideoFrame *video_player_generate_thumbnail(const gchar *video_path,

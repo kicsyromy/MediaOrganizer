@@ -31,6 +31,16 @@ static void video_frame_finalize(GObject *video_frame)
     G_OBJECT_CLASS(video_frame_parent_class)->dispose(video_frame);
 }
 
+void video_frame_ref(VideoFrame *self)
+{
+    g_object_ref(self);
+}
+
+void video_frame_unref(VideoFrame *self)
+{
+    g_object_unref(self);
+}
+
 FrameBufferType video_frame_get_buffer(VideoFrame *self, gsize *buffer_size)
 {
     if (buffer_size)
@@ -43,8 +53,7 @@ VideoFrame *video_frame_copy(VideoFrame *self)
 {
     VideoFrame *copy = NULL;
 
-    void *buffer_copy = g_malloc(self->buffer_size_);
-    memcpy(buffer_copy, self->buffer_, self->buffer_size_);
+    void *buffer_copy = g_memdup(self->buffer_, self->buffer_size_);
 
     copy = VIDEO_FRAME(g_object_new(VIDEO_FRAME_TYPE, NULL));
     copy->buffer_ = buffer_copy;
@@ -53,6 +62,20 @@ VideoFrame *video_frame_copy(VideoFrame *self)
     copy->height_ = self->height_;
 
     return copy;
+}
+
+gboolean video_frame_equals(VideoFrame *self, VideoFrame *other)
+{
+    gboolean are_equal = TRUE;
+
+    are_equal = (self->width_ == other->width_) &&
+                (self->height_ == other->height_) &&
+                (self->buffer_size_ == other->buffer_size_);
+
+    if (are_equal)
+        are_equal = (memcmp(self->buffer_, other->buffer_, self->buffer_size_) == 0);
+
+    return are_equal;
 }
 
 guint16 video_frame_get_width(VideoFrame *self)

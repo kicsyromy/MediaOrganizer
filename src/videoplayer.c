@@ -26,8 +26,8 @@ static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 
     g_mutex_lock(&self->frame_.mutex_);
 
-    buffer_size = self->video_data_.width *
-                  self->video_data_.height *
+    buffer_size = self->video_data_.width_ *
+                  self->video_data_.height_ *
                   sizeof(PixelDepthType);
 
     if (self->frame_.last_frame_)
@@ -36,8 +36,8 @@ static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
     self->frame_.last_frame_ = VIDEO_FRAME(g_object_new(VIDEO_FRAME_TYPE, NULL));
     self->frame_.last_frame_->buffer_ = (FrameBufferType)g_malloc(buffer_size);
     self->frame_.last_frame_->buffer_size_ = buffer_size;
-    self->frame_.last_frame_->width_ = self->video_data_.width;
-    self->frame_.last_frame_->height_ = self->video_data_.height;
+    self->frame_.last_frame_->width_ = self->video_data_.width_;
+    self->frame_.last_frame_->height_ = self->video_data_.height_;
 
     *frame_buffer_out = self->frame_.last_frame_->buffer_;
 
@@ -96,6 +96,9 @@ VideoPlayer *video_player_new()
     self->frame_.last_frame_ = NULL;
     self->video_data_.vlc_media_player_ = NULL;
     self->video_data_.vlc_event_mgr_ = NULL;
+    self->video_data_.width_ = 0;
+    self->video_data_.height_ = 0;
+    self->video_data_.volume_ = 100;
 
     return self;
 }
@@ -143,6 +146,16 @@ static void video_player_finalize(GObject *video_player)
     G_OBJECT_CLASS(video_player_parent_class)->finalize(video_player);
 }
 
+void video_player_ref(VideoPlayer *self)
+{
+    g_object_ref(self);
+}
+
+void video_player_unref(VideoPlayer *self)
+{
+    g_object_unref(self);
+}
+
 void video_player_set_callback_data(VideoPlayer *self, gpointer callback_data)
 {
     self->callbacks_.callback_data_ = callback_data;
@@ -179,8 +192,8 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     for (i = 0; i < track_info_size; ++i)
         if (track_info[i].i_type == libvlc_track_video)
         {
-            self->video_data_.width = track_info[i].u.video.i_width;
-            self->video_data_.height = track_info[i].u.video.i_height;
+            self->video_data_.width_ = track_info[i].u.video.i_width;
+            self->video_data_.height_ = track_info[i].u.video.i_height;
 
             break;
         }
@@ -204,8 +217,8 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
 
 void video_player_set_size(VideoPlayer *self, const guint16 width, const guint16 height)
 {
-    self->video_data_.width = width;
-    self->video_data_.height = height;
+    self->video_data_.width_ = width;
+    self->video_data_.height_ = height;
 
     video_player_update_format(self);
 }
@@ -245,16 +258,18 @@ gint64 video_player_get_duration(VideoPlayer *self)
     return libvlc_media_player_get_length(self->video_data_.vlc_media_player_);
 }
 
-void video_player_set_volume(VideoPlayer *self, const double volume)
+void video_player_set_volume(VideoPlayer *self, guint8 volume)
 {
-    UNUSED(self)
-    UNUSED(volume)
+    self->video_data_.volume_ = volume > 100 ? 100 : volume;
+
+    libvlc_audio_set_volume(self->video_data_.vlc_media_player_,
+                            self->video_data_.volume_);
 }
 
-void video_player_set_muted(VideoPlayer *self, int muted)
+void video_player_set_muted(VideoPlayer *self, gboolean muted)
 {
-    UNUSED(self)
-    UNUSED(muted)
+    libvlc_audio_set_volume(self->video_data_.vlc_media_player_,
+                            muted ? 0 : self->video_data_.volume_);
 }
 
 static void video_player_update_format(VideoPlayer *self)
@@ -262,9 +277,9 @@ static void video_player_update_format(VideoPlayer *self)
     if (self->video_data_.vlc_media_player_)
         libvlc_video_set_format(self->video_data_.vlc_media_player_,
                                 VIDEO_OUTPUT_TYPE,
-                                self->video_data_.width,
-                                self->video_data_.height,
-                                self->video_data_.width * 4);
+                                self->video_data_.width_,
+                                self->video_data_.height_,
+                                self->video_data_.width_ * 4);
 }
 
 static void video_player_set_callbacks(VideoPlayer *self)
