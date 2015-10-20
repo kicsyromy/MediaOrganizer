@@ -110,7 +110,6 @@ static void video_player_init(VideoPlayer *self)
         "--ignore-config",
         "--no-xlib",
         "--no-sub-autodetect-file",
-        "--no-inhibit",
         "--no-disable-screensaver",
         "--no-snapshot-preview",
         "--no-stats"
@@ -184,7 +183,18 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
     if (media_player && libvlc_media_player_is_playing(media_player))
         libvlc_media_player_stop(media_player);
 
+#ifdef WINNT
+    gchar **split_path = g_strsplit(path, "/", 0);
+    gchar *win_path = g_strjoinv("\\\\", split_path);
+    g_strfreev(split_path);
+
+    media = libvlc_media_new_path(vlc_instance, win_path);
+
+    g_free(win_path);
+#else
     media = libvlc_media_new_path(vlc_instance, path);
+#endif
+    g_return_if_fail(media != NULL);
     libvlc_media_parse(media);
 
     track_info_size = libvlc_media_get_tracks_info(media, &track_info);

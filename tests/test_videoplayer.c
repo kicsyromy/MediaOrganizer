@@ -9,6 +9,7 @@
 
 static const guint16 default_video_width = 640;
 static const guint16 default_video_height = 360;
+static const gfloat default_sleep_time = 0.3 * G_USEC_PER_SEC;
 
 void video_player_fixture_set_up(VideoPlayerFixture *fixture, gconstpointer data)
 {
@@ -111,7 +112,7 @@ void video_player_test_play(VideoPlayerFixture *fixture, gconstpointer data)
     TEST_IS_NULL(player->callbacks_.callback_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
-    g_usleep(0.1 * G_USEC_PER_SEC);
+    g_usleep(default_sleep_time);
     TEST_IS_NOT_NULL(player->frame_.last_frame_);
     TEST_IS_NOT_NULL(player->video_data_.vlc_instance_);
     TEST_IS_NOT_NULL(player->video_data_.vlc_media_player_);
@@ -136,10 +137,10 @@ void video_player_test_pause(VideoPlayerFixture *fixture, gconstpointer data)
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
 
     video_player_play(player);
-    g_usleep(0.1 * G_USEC_PER_SEC);
+    g_usleep(default_sleep_time);
     video_player_pause(player);
     VideoFrame *after_pause = video_frame_copy(player->frame_.last_frame_);
-    g_usleep(0.1 * G_USEC_PER_SEC);
+    g_usleep(default_sleep_time);
     VideoFrame *after_sleep = video_frame_copy(player->frame_.last_frame_);
 
     TEST_IS_TRUE(video_frame_equals(after_pause, after_sleep));
@@ -169,12 +170,12 @@ void video_player_test_stop(VideoPlayerFixture *fixture, gconstpointer data)
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
 
     video_player_play(player);
-    g_usleep(0.1 * G_USEC_PER_SEC);
+    g_usleep(default_sleep_time);
     video_player_pause(player);
     VideoFrame *after_play = video_frame_copy(player->frame_.last_frame_);
     video_player_stop(player);
     video_player_play(player);
-    g_usleep(0.1 * G_USEC_PER_SEC);
+    g_usleep(default_sleep_time);
     video_player_pause(player);
     VideoFrame *after_stop_play = video_frame_copy(player->frame_.last_frame_);
 
