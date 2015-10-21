@@ -25,6 +25,9 @@ include_directories("${PROJECT_SOURCE_DIR}/pub")
 # Add the build dir as include path for mo_config.h
 include_directories("${PROJECT_BINARY_DIR}")
 
+# Add path to external libraries
+link_directories(${GOBJECT_LIBRARY_DIRS} ${GLIB2_LIBRARY_DIRS} ${LIBVLC_LIBRARY_DIRS})
+
 # Define the source directories
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 
