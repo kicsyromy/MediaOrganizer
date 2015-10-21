@@ -8,6 +8,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.so")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set(LIBVLC_INCLUDE_DIRS "${MediaOrganizer_SOURCE_DIR}/osx/include")
+    set(LIBVLC_LIBRARIES "${MediaOrganizer_SOURCE_DIR}/osx/lib/libvlc.dylib")
+
+    set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.dylib")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(ProductVersion_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
 	set(TargetArch_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
