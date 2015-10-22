@@ -1,7 +1,9 @@
 *~
 *.*~
 build/
+*.user
 *.pro.user
+*.txt.user
 *.o
 *.so
 *.so*
