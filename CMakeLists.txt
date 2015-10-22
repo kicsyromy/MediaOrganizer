@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(MediaOrganizer)
 add_definitions(-DMO_LIB)
 
@@ -27,6 +27,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 # Add path to external libraries
 link_directories(${GOBJECT_LIBRARY_DIRS} ${GLIB2_LIBRARY_DIRS} ${LIBVLC_LIBRARY_DIRS})
+include_directories(SYSTEM ${GOBJECT_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${LIBVLC_INCLUDE_DIRS})
+add_definitions(${GOBJECT_CFLAGS} ${GLIB_CFLAGS} ${LIBVLC_CFLAGS})
 
 # Define the source directories
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
@@ -39,7 +41,8 @@ set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${Me
 
 # Se the apropriate compiler flags based on output from pkg-config
 target_link_libraries(mo ${GOBJECT_LIBRARIES} ${GLIB2_LIBRARIES} ${LIBVLC_LIBRARIES})
-target_include_directories(mo PUBLIC ${GOBJECT_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${LIBVLC_INCLUDE_DIRS})
-target_compile_options(mo PUBLIC ${GOBJECT_CFLAGS} ${GLIB_CFLAGS} ${LIBVLC_CFLAGS})
 
-add_subdirectory(tests)
+IF(NOT NO_MAKE_TESTS)
+    add_subdirectory(tests)
+ENDIF(NOT NO_MAKE_TESTS)
+
