@@ -22,11 +22,11 @@
 
 #define TEST_IS_NULL(expr) \
     g_print("  Running: %s == NULL\n", #expr); \
-    g_assert_cmpint(expr, ==, 0);
+    g_assert_cmpint((long long)(intptr_t)(expr), ==, 0);
 
 #define TEST_IS_NOT_NULL(expr) \
     g_print("  Running: %s != NULL\n", #expr); \
-    g_assert_cmpint(expr, !=, 0);
+    g_assert_cmpint((long long)(intptr_t)(expr), !=, 0);
 
 #define TEST_IS_TRUE(expr) \
     g_print("  Running: %s is TRUE\n", #expr); \
