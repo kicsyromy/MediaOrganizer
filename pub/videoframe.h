@@ -21,7 +21,7 @@ MO_API  void video_frame_ref(VideoFrame *frame);
 MO_API  void video_frame_unref(VideoFrame *frame);
 
 MO_API  FrameBufferType video_frame_get_buffer(VideoFrame *frame, gsize *buffer_size);
-MO_API  VideoFrame *video_frame_copy(VideoFrame *frame);
+MO_API  VideoFrame *video_frame_copy(const VideoFrame *frame);
 MO_API  gboolean video_frame_equals(VideoFrame *frame, VideoFrame *other);
 MO_API  guint16 video_frame_get_width(VideoFrame *frame);
 MO_API  guint16 video_frame_get_height(VideoFrame *frame);

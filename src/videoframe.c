@@ -49,7 +49,7 @@ FrameBufferType video_frame_get_buffer(VideoFrame *self, gsize *buffer_size)
     return self->buffer_;
 }
 
-VideoFrame *video_frame_copy(VideoFrame *self)
+VideoFrame *video_frame_copy(const VideoFrame *self)
 {
     VideoFrame *copy = NULL;
 

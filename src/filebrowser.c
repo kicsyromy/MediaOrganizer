@@ -64,10 +64,29 @@ static void file_browser_finalize(GObject *browser)
 
 void file_browser_set_root_path(FileBrowser *self, const gchar *path)
 {
+    GDir *root_dir = NULL;
+    GError *error = NULL;
+    GNode *entry = NULL;
+    const gchar *entry_name = NULL;
+
     if (self->root_node_)
     {
         g_node_destroy(self->root_node_);
         self->current_node_ = NULL;
+    }
+
+    g_return_if_fail(g_file_test(path, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR));
+    root_dir = g_dir_open(path, 0, &error);
+    g_return_if_fail((root_dir == NULL) || (error != NULL));
+
+    while (TRUE)
+    {
+        entry_name = g_dir_read_name(root_dir);
+        if (entry_name == NULL)
+            break;
+
+        entry = g_node_new((gpointer)g_strdup(entry_name));
+        g_node_append(self->root_node_, entry);
     }
 
     self->root_node_ = g_node_new((void *)path);
