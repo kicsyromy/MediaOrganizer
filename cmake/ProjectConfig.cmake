@@ -2,30 +2,30 @@ find_package(PkgConfig)
 pkg_search_module(GOBJECT REQUIRED gobject-2.0>=2.32.4)
 pkg_search_module(GLIB2   REQUIRED glib-2.0>=2.32.4)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     pkg_search_module(LIBVLC  REQUIRED libvlc>=2.0.8)
 
     set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.so")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(LIBVLC_INCLUDE_DIRS "${MediaOrganizer_SOURCE_DIR}/osx/include")
     set(LIBVLC_LIBRARIES "${MediaOrganizer_SOURCE_DIR}/osx/lib/libvlc.dylib")
 
     set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.dylib")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(ProductVersion_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
     set(TargetArch_DIR  "${MediaOrganizer_SOURCE_DIR}/cmake")
 
     find_package(TargetArch)
     target_architecture(ARCH)
-    IF(${ARCH} MATCHES "x86_64")
+    if(${ARCH} MATCHES "x86_64")
         set(LIB_PATH "${MediaOrganizer_SOURCE_DIR}/windows/lib/x64")
-    ELSE(${ARCH} MATCHES "x86_64")
+    else(${ARCH} MATCHES "x86_64")
         set(LIB_PATH "${MediaOrganizer_SOURCE_DIR}/windows/lib/win32")
-    ENDIF(${ARCH} MATCHES "x86_64")
+    endif(${ARCH} MATCHES "x86_64")
 
     find_package(ProductVersion)
     generate_product_version(
@@ -43,4 +43,4 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LIBVLC_LIBRARIES "${LIB_PATH}/libvlc.dll")
 
     set(LIBMO "${MediaOrganizer_BINARY_DIR}/libmo.dll")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

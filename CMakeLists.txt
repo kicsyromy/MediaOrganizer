@@ -42,7 +42,6 @@ set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${Me
 # Se the apropriate compiler flags based on output from pkg-config
 target_link_libraries(mo ${GOBJECT_LIBRARIES} ${GLIB2_LIBRARIES} ${LIBVLC_LIBRARIES})
 
-IF(NOT NO_MAKE_TESTS)
+if(NOT NO_MAKE_TESTS)
     add_subdirectory(tests)
-ENDIF(NOT NO_MAKE_TESTS)
-
+endif(NOT NO_MAKE_TESTS)

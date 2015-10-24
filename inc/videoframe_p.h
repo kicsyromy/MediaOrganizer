@@ -5,6 +5,7 @@
 
 C_STYLE_BEGIN
 
+#include "videoplayer.h"
 #include "videoframe.h"
 
 struct _VideoFrame

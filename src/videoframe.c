@@ -64,7 +64,7 @@ VideoFrame *video_frame_copy(const VideoFrame *self)
     return copy;
 }
 
-gboolean video_frame_equals(VideoFrame *self, VideoFrame *other)
+gboolean video_frame_equals(const VideoFrame *self, const VideoFrame *other)
 {
     gboolean are_equal = TRUE;
 

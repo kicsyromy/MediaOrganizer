@@ -1,6 +1,9 @@
 #ifndef TEST_GLOBAL_H
 #define TEST_GLOBAL_H
 
+#include <stdint.h>
+#include <glib.h>
+
 #define BEGIN_TEST_CASE g_print("\n");
 #define END_TEST_CASE
 
@@ -19,6 +22,14 @@
 #define TEST_CMPFLOAT(n1, cmp, n2) \
     g_print("  Running: %s %s %fg\n", #n1, #cmp, n2); \
     g_assert_cmpfloat(n1, cmp, n2);
+
+#define TEST_STREQ(str1, str2) \
+    g_print("  Running: %s == %s\n", str1, str2); \
+    g_assert_cmpint(g_strcmp0(str1, str2), ==, 0);
+
+#define TEST_CMPPTR(p1, cmp, p2) \
+    g_print("  Running: %s %s %s\n", #p1, #cmp, #p2); \
+    g_assert_cmpint(p1, cmp, p2);
 
 #define TEST_IS_NULL(expr) \
     g_print("  Running: %s == NULL\n", #expr); \

@@ -9,7 +9,7 @@
 
 static const guint16 default_video_width = 640;
 static const guint16 default_video_height = 360;
-static const gfloat default_sleep_time = 0.3 * G_USEC_PER_SEC;
+static const gfloat default_sleep_time = 0.4 * G_USEC_PER_SEC;
 
 void video_player_fixture_set_up(VideoPlayerFixture *fixture, gconstpointer data)
 {
@@ -26,7 +26,7 @@ void video_player_fixture_tear_down(VideoPlayerFixture *fixture, gconstpointer d
 {
     UNUSED(data)
 
-    g_object_unref(fixture->player_);
+    video_player_unref(fixture->player_);
     g_free(fixture->pos_helper_);
 }
 
@@ -105,6 +105,7 @@ void video_player_test_play(VideoPlayerFixture *fixture, gconstpointer data)
     const gchar *video_path = (const gchar *)data;
 
     video_player_set_source(player, video_path);
+    video_player_set_muted(player, TRUE);
     video_player_play(player);
 
     BEGIN_TEST_CASE
@@ -127,8 +128,11 @@ void video_player_test_pause(VideoPlayerFixture *fixture, gconstpointer data)
 {
     VideoPlayer *player = fixture->player_;
     const gchar *video_path = (const gchar *)data;
+    VideoFrame *after_pause;
+    VideoFrame *after_sleep;
 
     video_player_set_source(player, video_path);
+    video_player_set_muted(player, TRUE);
 
     BEGIN_TEST_CASE
 
@@ -139,9 +143,9 @@ void video_player_test_pause(VideoPlayerFixture *fixture, gconstpointer data)
     video_player_play(player);
     g_usleep(default_sleep_time);
     video_player_pause(player);
-    VideoFrame *after_pause = video_frame_copy(player->frame_.last_frame_);
+    after_pause = video_frame_copy(player->frame_.last_frame_);
     g_usleep(default_sleep_time);
-    VideoFrame *after_sleep = video_frame_copy(player->frame_.last_frame_);
+    after_sleep = video_frame_copy(player->frame_.last_frame_);
 
     TEST_IS_TRUE(video_frame_equals(after_pause, after_sleep));
     video_frame_unref(after_pause);
@@ -160,8 +164,11 @@ void video_player_test_stop(VideoPlayerFixture *fixture, gconstpointer data)
 {
     VideoPlayer *player = fixture->player_;
     const gchar *video_path = (const gchar *)data;
+    VideoFrame *after_play;
+    VideoFrame *after_stop_play;
 
     video_player_set_source(player, video_path);
+    video_player_set_muted(player, TRUE);
 
     BEGIN_TEST_CASE
 
@@ -172,12 +179,12 @@ void video_player_test_stop(VideoPlayerFixture *fixture, gconstpointer data)
     video_player_play(player);
     g_usleep(default_sleep_time);
     video_player_pause(player);
-    VideoFrame *after_play = video_frame_copy(player->frame_.last_frame_);
+    after_play = video_frame_copy(player->frame_.last_frame_);
     video_player_stop(player);
     video_player_play(player);
     g_usleep(default_sleep_time);
     video_player_pause(player);
-    VideoFrame *after_stop_play = video_frame_copy(player->frame_.last_frame_);
+    after_stop_play = video_frame_copy(player->frame_.last_frame_);
 
     TEST_IS_TRUE(video_frame_equals(after_play, after_stop_play));
     video_frame_unref(after_play);
@@ -215,6 +222,7 @@ void video_player_test_set_position(VideoPlayerFixture *fixture, gconstpointer d
     fixture->pos_helper_->requested_pos_ = 0.5;
 
     video_player_set_source(player, video_path);
+    video_player_set_muted(player, TRUE);
     video_player_set_callback_data(player, fixture);
     video_player_set_position_changed_callback(player, position_changed_cb);
 

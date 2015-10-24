@@ -30,6 +30,7 @@ struct VideoData
     gint16 height_;
 
     guint8 volume_;
+    gboolean muted_;
 };
 
 struct Callbacks
@@ -54,6 +55,9 @@ struct _VideoPlayerClass
 {
     GObjectClass parent;
 };
+
+void video_player_private_update_format(VideoPlayer *self);
+void video_player_private_set_callbacks(VideoPlayer *self);
 
 C_STYLE_END
 

@@ -15,10 +15,6 @@ static void video_player_class_init(VideoPlayerClass *klass);
 static void video_player_dispose(GObject *video_player);
 static void video_player_finalize(GObject *video_player);
 
-/* Private methods */
-static void video_player_update_format(VideoPlayer *self);
-static void video_player_set_callbacks(VideoPlayer *self);
-
 static void *vlc_video_lock_callback(void *data, void **frame_buffer_out)
 {
     VideoPlayer *self = (VideoPlayer *)data;
@@ -216,8 +212,8 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
         self->video_data_.vlc_event_mgr_ =
                 libvlc_media_player_event_manager(self->video_data_.vlc_media_player_);
 
-        video_player_set_callbacks(self);
-        video_player_update_format(self);
+        video_player_private_set_callbacks(self);
+        video_player_private_update_format(self);
     }
     else
         libvlc_media_player_set_media(self->video_data_.vlc_media_player_, media);
@@ -230,7 +226,7 @@ void video_player_set_size(VideoPlayer *self, const guint16 width, const guint16
     self->video_data_.width_ = width;
     self->video_data_.height_ = height;
 
-    video_player_update_format(self);
+    video_player_private_update_format(self);
 }
 
 void video_player_play(VideoPlayer *self)
@@ -270,6 +266,7 @@ gint64 video_player_get_duration(VideoPlayer *self)
 
 void video_player_set_volume(VideoPlayer *self, guint8 volume)
 {
+    self->video_data_.muted_ = FALSE;
     self->video_data_.volume_ = volume > 100 ? 100 : volume;
 
     libvlc_audio_set_volume(self->video_data_.vlc_media_player_,
@@ -280,9 +277,10 @@ void video_player_set_muted(VideoPlayer *self, gboolean muted)
 {
     libvlc_audio_set_volume(self->video_data_.vlc_media_player_,
                             muted ? 0 : self->video_data_.volume_);
+    self->video_data_.muted_ = muted;
 }
 
-static void video_player_update_format(VideoPlayer *self)
+void video_player_private_update_format(VideoPlayer *self)
 {
     if (self->video_data_.vlc_media_player_)
         libvlc_video_set_format(self->video_data_.vlc_media_player_,
@@ -292,7 +290,7 @@ static void video_player_update_format(VideoPlayer *self)
                                 self->video_data_.width_ * 4);
 }
 
-static void video_player_set_callbacks(VideoPlayer *self)
+void video_player_private_set_callbacks(VideoPlayer *self)
 {
     libvlc_event_attach(self->video_data_.vlc_event_mgr_,
                         libvlc_MediaPlayerPositionChanged,
