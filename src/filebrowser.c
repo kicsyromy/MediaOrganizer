@@ -196,7 +196,7 @@ guint file_browser_private_update_node_content(GNode *node)
 
 gchar *file_browser_private_build_path(GNode *node, gsize size_hint)
 {
-    gsize position = size_hint <= 0 ? 2048 : size_hint;
+    gsize position = size_hint <= 0 ? 2047 : size_hint;
     gchar path[position + 1];
     const gchar *entry_name = NULL;
     size_t entry_length = 0;
@@ -227,9 +227,14 @@ gchar *file_browser_private_build_path(GNode *node, gsize size_hint)
             }
             position--;
         }
-
         if (G_NODE_IS_ROOT(node))
+        {
+#ifdef WINNT
+            // No forward slash at the begining of the path
+            position++;
+#endif
             break;
+        }
 
         node = node->parent;
     }

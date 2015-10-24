@@ -7,9 +7,6 @@ build/
 *.o
 *.so
 *.so*
-*.dylib
-*.dylib*
-*.dll
 *.lai
 *.la
 *.a

@@ -31,7 +31,7 @@ void file_browser_test_set_root_path(FileBrowserFixture *fixture, gconstpointer 
     TEST_IS_NULL(browser->root_node_->parent)
     TEST_IS_NOT_NULL(browser->current_node_);
     TEST_CMPPTR(browser->current_node_, ==, browser->root_node_);
-    TEST_CMPINT(file_count, ==, 4);
+    TEST_CMPINT(file_count, ==, 3);
     TEST_STREQ(root_path, file_browser_private_build_path(browser->current_node_, 0));
 
     END_TEST_CASE
@@ -75,7 +75,7 @@ void file_browser_test_file_count(FileBrowserFixture *fixture, gconstpointer dat
     TEST_IS_NULL(browser->root_node_->parent)
     TEST_IS_NOT_NULL(browser->current_node_);
     TEST_CMPPTR(browser->current_node_, ==, browser->root_node_);
-    TEST_CMPINT(file_browser_current_dir_file_count(browser), ==, 4);
+    TEST_CMPINT(file_browser_current_dir_file_count(browser), ==, 3);
 
     END_TEST_CASE
 }
@@ -94,7 +94,7 @@ void file_browser_test_get_content(FileBrowserFixture *fixture, gconstpointer da
     TEST_IS_NULL(browser->root_node_->parent)
     TEST_IS_NOT_NULL(browser->current_node_);
     TEST_CMPPTR(browser->current_node_, ==, browser->root_node_);
-    TEST_CMPINT(file_count, ==, 4);
+    TEST_CMPINT(file_count, ==, 3);
     TEST_IS_NOT_NULL((file_list = file_browser_current_dir_get_content(browser)));
 
     END_TEST_CASE
