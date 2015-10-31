@@ -10,13 +10,32 @@ set(MediaOrganizer_VERSION_PATCH 0)
 set(MediaOrganizer_PRIVATE_HEADERS "${PROJECT_SOURCE_DIR}/inc")
 set(MediaOrganizer_PUBLIC_HEADERS  "${PROJECT_SOURCE_DIR}/pub")
 
+include("${MediaOrganizer_SOURCE_DIR}/cmake/ProjectConfig.cmake")
+
 # Generate configuration file with the proper version number
 configure_file(
     "${PROJECT_SOURCE_DIR}/conf/mo_config.h.in"
     "${PROJECT_BINARY_DIR}/mo_config.h"
+    @ONLY
 )
 
-include("${MediaOrganizer_SOURCE_DIR}/cmake/ProjectConfig.cmake")
+configure_file(
+    "${PROJECT_SOURCE_DIR}/conf/libmo.pc.in"
+    "${PROJECT_BINARY_DIR}/pkgconfig/libmo.pc"
+    @ONLY
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/conf/libmo.files.in"
+    "${PROJECT_BINARY_DIR}/vala/libmo.files"
+    @ONLY
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/conf/libmo.namespace.in"
+    "${PROJECT_BINARY_DIR}/vala/libmo.namespace"
+    @ONLY
+)
 
 # Specify project include directories
 include_directories("${PROJECT_SOURCE_DIR}/inc")
