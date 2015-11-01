@@ -25,18 +25,6 @@ configure_file(
     @ONLY
 )
 
-configure_file(
-    "${PROJECT_SOURCE_DIR}/conf/libmo.files.in"
-    "${PROJECT_BINARY_DIR}/vala/libmo.files"
-    @ONLY
-)
-
-configure_file(
-    "${PROJECT_SOURCE_DIR}/conf/libmo.namespace.in"
-    "${PROJECT_BINARY_DIR}/vala/libmo.namespace"
-    @ONLY
-)
-
 # Specify project include directories
 include_directories("${PROJECT_SOURCE_DIR}/inc")
 include_directories("${PROJECT_SOURCE_DIR}/pub")
