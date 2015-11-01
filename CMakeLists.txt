@@ -61,6 +61,29 @@ set_target_properties(mo PROPERTIES VERSION ${MediaOrganizer_VERSION_MAJOR}.${Me
 # Se the apropriate compiler flags based on output from pkg-config
 target_link_libraries(mo ${GOBJECT_LIBRARIES} ${GLIB2_LIBRARIES} ${LIBVLC_LIBRARIES})
 
+# Install binaries
+install(
+    TARGETS mo
+    RUNTIME DESTINATION lib
+    LIBRARY DESTINATION lib
+)
+
+# Install public headers
+install(
+    DIRECTORY ${MediaOrganizer_PUBLIC_HEADERS}/
+    DESTINATION include/mo
+)
+
+install(
+    FILES ${PROJECT_BINARY_DIR}/mo_config.h
+    DESTINATION include/mo
+)
+
+install(
+    FILES ${PROJECT_BINARY_DIR}/pkgconfig/libmo.pc
+    DESTINATION lib/pkgconfig
+)
+
 if(NOT NO_MAKE_TESTS)
     add_subdirectory(tests)
 endif(NOT NO_MAKE_TESTS)

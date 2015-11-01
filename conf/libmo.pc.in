@@ -1,0 +1,12 @@
+Name: libmo
+Description: Media Organizer base functionality
+Version: @MediaOrganizer_VERSION_MAJOR@.@MediaOrganizer_VERSION_MINOR@.@MediaOrganizer_VERSION_PATCH@
+Requires:@PKG_CONFIG_REQUIRES@
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/mo
+
+Libs: -L${libdir} -lmo
+Cflags: -I${includedir}
