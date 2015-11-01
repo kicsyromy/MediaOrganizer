@@ -2,66 +2,65 @@ using GLib;
 
 namespace MediaOrganizer
 {
-    Application global_app;
+    Application application;
 
-    public class Application: GLib.Application
+    public class Application: Gtk.Application
     {
+        /* public constructor(s)/destructor*/
         public Application(string application_id)
         {
-            Object(application_id: application_id,
-                   flags:(ApplicationFlags.HANDLES_COMMAND_LINE));
+            Object(application_id: application_id);
 
             activate.connect(this.onActivated);
             startup.connect(this.onStartup);
-            command_line.connect(this.onCommandLine);
         }
 
+        /* public methods */
+        /* TBD */
+
+        /* private methods */
         private void onStartup()
         {
-
             stdout.printf("on_startup\n");
-        }
-
-        private int onCommandLine(ApplicationCommandLine command_line)
-        {
-            bool primary_instance = !command_line.get_is_remote ();
-
-            if (primary_instance) {
-                print ("Primary Instance Command Line !!!\n");
-            } else {
-                print ("Remote Command Line !!!\n");
-            }
-
-            return 0;
         }
 
         private void onActivated()
         {
-            stdout.printf ("on_activated\n");
+            if (!application.get_is_remote())
+            {
+                mainWindow_ = new MainWindow("Hello Vala MainWindow");
+                this.add_window(mainWindow_);
+            }
         }
 
-
-        private static int main (string[] args)
+        private void showMainWindow()
         {
-            global_app = new Application("ro.kicsyromy.MediaOrganizer");
-
-            try {
-                global_app.register (null);
-            } catch (Error e) {
-                print ("Application Error: %s\n", e.message);
-                return -1;
-            }
-
-            if (!global_app.get_is_remote())
-            {
-                stdout.printf("No prior instance detected\n");
-            }
-            else
-            {
-                stdout.printf("A previous instance is already launched\n");
-            }
-
-            return global_app.run(args);
+            mainWindow_.show_all();
         }
+
+        /* private variables */
+        private MainWindow mainWindow_;
+    }
+
+    int main(string[] args)
+    {
+        application = new Application("ro.kicsyromy.MediaOrganizer");
+
+        try
+        {
+            application.register(null);
+        }
+        catch(Error e)
+        {
+            print ("Application Error: %s\n", e.message);
+            return -1;
+        }
+
+        if (!application.get_is_remote())
+            application.showMainWindow();
+        else
+            stdout.printf("MediaOrganizer is already running\n");
+
+        return application.run(args);
     }
 }
