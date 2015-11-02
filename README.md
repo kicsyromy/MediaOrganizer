@@ -18,3 +18,5 @@ The project is built using CMake. Build dependencies are:
   - + all their dependencies
   
 This repository serves, currently, mostly as a test-bend for different technologies, frameworks, programming languages, etc.
+
+All/any of this information is subject to change at any time.
