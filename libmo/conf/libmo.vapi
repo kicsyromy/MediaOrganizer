@@ -28,31 +28,19 @@ public class FileBrowser : GLib.Object {
 public class FileBrowserClass {
 }
 [CCode (cheader_filename = "libmo.h")]
-[Compact]
-public class FrameBufferType {
-}
-[CCode (cheader_filename = "libmo.h")]
 public class VideoFrame : GLib.Object {
     [CCode (has_construct_function = false)]
     protected VideoFrame ();
     [CCode (cname = "video_frame_copy")]
-    public static unowned VideoFrame copy (VideoFrame frame);
+    public VideoFrame copy (VideoFrame frame);
     [CCode (cname = "video_frame_equals")]
-    public static bool equals (VideoFrame frame, VideoFrame other);
+    public bool equals (VideoFrame other);
     [CCode (cname = "video_frame_get_buffer")]
-    public static unowned FrameBufferType get_buffer (VideoFrame frame, size_t buffer_size);
+    public uint8[] getBuffer ();
     [CCode (cname = "video_frame_get_height")]
-    public static uint16 get_height (VideoFrame frame);
+    public uint16 getHeight ();
     [CCode (cname = "video_frame_get_width")]
-    public static uint16 get_width (VideoFrame frame);
-    [CCode (cname = "video_frame_ref")]
-    public static void @ref (VideoFrame frame);
-    [CCode (cname = "video_frame_unref")]
-    public static void unref (VideoFrame frame);
-}
-[CCode (cheader_filename = "libmo.h")]
-[Compact]
-public class VideoFrameClass {
+    public uint16 getWidth ();
 }
 [CCode (cheader_filename = "libmo.h")]
 public class VideoPlayer : GLib.Object {

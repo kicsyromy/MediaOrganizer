@@ -5,7 +5,6 @@ namespace MediaOrganizer
 {
     public class MainWindow: Gtk.Window
     {
-
         /* public constructor(s)/destructor*/
         public MainWindow(string title)
         {
@@ -15,11 +14,16 @@ namespace MediaOrganizer
 
             header_ = new Gtk.HeaderBar();
             header_.set_title(title);
-
+            header_.set_show_close_button(true);
             this.set_titlebar(header_);
+
+            surface_ = new VideoSurface();
+
+            add(surface_);
         }
 
         /* private variables */
         private Gtk.HeaderBar header_;
+        private VideoSurface surface_;
     }
 }

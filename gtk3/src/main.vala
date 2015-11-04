@@ -11,34 +11,20 @@ namespace MediaOrganizer
         {
             Object(application_id: application_id);
 
-            activate.connect(this.onActivated);
-            startup.connect(this.onStartup);
-        }
-
-        /* public methods */
-        /* TBD */
-
-        /* private methods */
-        private void onStartup()
-        {
-            stdout.printf("on_startup\n");
+            activate.connect(onActivated);
         }
 
         private void onActivated()
         {
-            if (!application.get_is_remote())
+            if (!get_is_remote())
             {
                 mainWindow_ = new MainWindow("Hello Vala MainWindow");
-                this.add_window(mainWindow_);
+                add_window(mainWindow_);
+
+                mainWindow_.show_all();
             }
         }
 
-        private void showMainWindow()
-        {
-            mainWindow_.show_all();
-        }
-
-        /* private variables */
         private MainWindow mainWindow_;
     }
 
@@ -52,14 +38,9 @@ namespace MediaOrganizer
         }
         catch(Error e)
         {
-            print ("Application Error: %s\n", e.message);
+            print("Application Error: %s\n", e.message);
             return -1;
         }
-
-        if (!application.get_is_remote())
-            application.showMainWindow();
-        else
-            stdout.printf("MediaOrganizer is already running\n");
 
         return application.run(args);
     }
