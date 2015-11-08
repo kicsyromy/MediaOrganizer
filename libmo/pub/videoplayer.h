@@ -24,11 +24,12 @@ MO_API  VideoPlayer *video_player_new();
 MO_API  void video_player_ref(VideoPlayer *player);
 MO_API  void video_player_unref(VideoPlayer *player);
 
-MO_API  void video_player_set_callback_data(VideoPlayer *player, gpointer callback_data);
-MO_API  void video_player_set_render_callback(VideoPlayer *player, RenderCallback cb);
-MO_API  void video_player_set_position_changed_callback(VideoPlayer *player, PositionChangedCallback cb);
+MO_API  void video_player_set_render_callback(VideoPlayer *player, RenderCallback cb, gpointer callback_data);
+MO_API  void video_player_set_position_changed_callback(VideoPlayer *player, PositionChangedCallback cb, gpointer callback_data);
 MO_API  void video_player_set_source(VideoPlayer *player, const gchar *path);
 MO_API  void video_player_set_size(VideoPlayer *player, const guint16 width, const guint16 height);
+MO_API  guint16 video_player_get_width(VideoPlayer *player);
+MO_API  guint16 video_player_get_height(VideoPlayer *player);
 MO_API  void video_player_play(VideoPlayer *player);
 MO_API  void video_player_pause(VideoPlayer *player);
 MO_API  void video_player_stop(VideoPlayer *player);

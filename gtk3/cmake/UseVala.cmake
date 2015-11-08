@@ -125,6 +125,14 @@ function(vala_precompile output)
         list(APPEND vala_pkg_opts "--pkg=${pkg}")
     endforeach(pkg ${ARGS_PACKAGES})
 
+    set(vala_args_opts "")
+    foreach(opt ${ARGS_OPTIONS})
+        list(APPEND vala_args_opts "${opt}")
+    endforeach(opt ${ARGS_OPTIONS})
+    if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        list(APPEND vala_args_opts "-g")
+    endif(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+
     set(vala_define_opts "")
     foreach(def ${ARGS_DEFINTIONS})
         list(APPEND vala_define_opts "--define=${def}")
@@ -181,7 +189,7 @@ function(vala_precompile output)
         "-d" ${DIRECTORY} 
         ${vala_pkg_opts} 
         ${vala_define_opts}
-        ${ARGS_OPTIONS} 
+        ${vala_args_opts}
         ${in_files} 
         ${custom_vapi_arguments}
     DEPENDS 

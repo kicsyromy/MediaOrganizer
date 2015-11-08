@@ -49,7 +49,7 @@ static void vlc_video_unlock_callback(void *data, void *id, void *const *frame_b
 
     if (self->callbacks_.render_cb_)
         self->callbacks_.render_cb_(self->frame_.last_frame_,
-                                    self->callbacks_.callback_data_);
+                                    self->callbacks_.cb_data_.render_cb_data_);
 
     g_mutex_unlock(&self->frame_.mutex_);
 }
@@ -74,7 +74,7 @@ static void vlc_event_callback(const libvlc_event_t *event, void *data)
     case libvlc_MediaPlayerPositionChanged:
         if (self->callbacks_.pos_changed_cb_)
             self->callbacks_.pos_changed_cb_(event->u.media_player_position_changed.new_position,
-                                             self->callbacks_.callback_data_);
+                                             self->callbacks_.cb_data_.pos_changed_cb_data_);
     }
 
     g_mutex_unlock(&self->callbacks_.mutex_);
@@ -85,9 +85,10 @@ VideoPlayer *video_player_new()
     VideoPlayer *self = VIDEO_PLAYER(g_object_new(VIDEO_PLAYER_TYPE, NULL));
 
     g_mutex_init(&self->callbacks_.mutex_);
-    self->callbacks_.callback_data_ = NULL;
     self->callbacks_.render_cb_ = NULL;
     self->callbacks_.pos_changed_cb_ = NULL;
+    self->callbacks_.cb_data_.render_cb_data_ = NULL;
+    self->callbacks_.cb_data_.pos_changed_cb_data_ = NULL;
     g_mutex_init(&self->frame_.mutex_);
     self->frame_.last_frame_ = NULL;
     self->video_data_.vlc_media_player_ = NULL;
@@ -151,19 +152,16 @@ void video_player_unref(VideoPlayer *self)
     g_object_unref(self);
 }
 
-void video_player_set_callback_data(VideoPlayer *self, gpointer callback_data)
-{
-    self->callbacks_.callback_data_ = callback_data;
-}
-
-void video_player_set_render_callback(VideoPlayer *self, RenderCallback cb)
+void video_player_set_render_callback(VideoPlayer *self, RenderCallback cb, gpointer callback_data)
 {
     self->callbacks_.render_cb_ = cb;
+    self->callbacks_.cb_data_.render_cb_data_ = callback_data;
 }
 
-void video_player_set_position_changed_callback(VideoPlayer *self, PositionChangedCallback cb)
+void video_player_set_position_changed_callback(VideoPlayer *self, PositionChangedCallback cb, gpointer callback_data)
 {
     self->callbacks_.pos_changed_cb_ = cb;
+    self->callbacks_.cb_data_.pos_changed_cb_data_ = callback_data;
 }
 
 void video_player_set_source(VideoPlayer *self, const gchar *path)
@@ -223,10 +221,24 @@ void video_player_set_source(VideoPlayer *self, const gchar *path)
 
 void video_player_set_size(VideoPlayer *self, const guint16 width, const guint16 height)
 {
-    self->video_data_.width_ = width;
-    self->video_data_.height_ = height;
+    if ((self->video_data_.width_ != width) ||
+        (self->video_data_.height_ != height));
+    {
+        self->video_data_.width_ = width;
+        self->video_data_.height_ = height;
 
-    video_player_private_update_format(self);
+        video_player_private_update_format(self);
+    }
+}
+
+guint16 video_player_get_width(VideoPlayer *self)
+{
+    return self->video_data_.width_;
+}
+
+guint16 video_player_get_height(VideoPlayer *self)
+{
+    return self->video_data_.height_;
 }
 
 void video_player_play(VideoPlayer *self)

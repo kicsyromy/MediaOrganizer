@@ -17,13 +17,21 @@ namespace MediaOrganizer
             header_.set_show_close_button(true);
             this.set_titlebar(header_);
 
-            surface_ = new VideoSurface();
+            video_ = new VideoContent("/media/Shared/Downloads/Terminator.Genisys.2015.1080p.HC.HDRip.X264.AC3-EVO/sample.mkv");
+            video_.play();
 
-            add(surface_);
+            this.size_allocate.connect(onSizeChanged);
+
+            add(video_);
+        }
+
+        void onSizeChanged(Gtk.Allocation size)
+        {
+            video_.setSize((uint16)this.get_allocated_width(), (uint16)this.get_allocated_height());
         }
 
         /* private variables */
         private Gtk.HeaderBar header_;
-        private VideoSurface surface_;
+        private VideoContent video_;
     }
 }

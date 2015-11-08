@@ -33,12 +33,18 @@ struct VideoData
     gboolean muted_;
 };
 
+struct CallbackData
+{
+    gpointer render_cb_data_;
+    gpointer pos_changed_cb_data_;
+};
+
 struct Callbacks
 {
     GMutex mutex_;
-    gpointer callback_data_;
     RenderCallback render_cb_;
     PositionChangedCallback pos_changed_cb_;
+    struct CallbackData cb_data_;
 };
 
 struct _VideoPlayer

@@ -16,7 +16,7 @@ include("${MediaOrganizer-GTK3_SOURCE_DIR}/cmake/UseVala.cmake")
 vala_precompile(VALA_C
     src/main.vala
     src/main_window.vala
-    src/video_surface.vala
+    src/video_content.vala
 PACKAGES
     gtk+-3.0
 CUSTOM_VAPIS

@@ -105,12 +105,12 @@ VideoFrame *thumbnailer_generate_thumbnail(Thumbnailer *self)
 {
     UNUSED(self)
 
-    video_player_set_callback_data(self->player_, self);
-    video_player_set_render_callback(self->player_, render_callback);
-    video_player_set_position_changed_callback(self->player_, position_changed_callback);
+    video_player_set_render_callback(self->player_, render_callback, self);
+    video_player_set_position_changed_callback(self->player_, position_changed_callback, self);
 
     g_mutex_lock(&self->render_mutex_);
 
+    video_player_set_muted(self->player_, TRUE);
     video_player_play(self->player_);
     video_player_set_position(self->player_, self->position_);
 
