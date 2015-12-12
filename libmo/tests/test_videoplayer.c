@@ -38,7 +38,8 @@ void video_player_test_init(VideoPlayerFixture *fixture, gconstpointer data)
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
     TEST_IS_NULL(player->frame_.last_frame_);
@@ -60,7 +61,8 @@ void video_player_test_set_video(VideoPlayerFixture *fixture, gconstpointer data
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
     TEST_IS_NULL(player->frame_.last_frame_);
@@ -85,7 +87,8 @@ void video_player_test_set_size(VideoPlayerFixture *fixture, gconstpointer data)
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
     TEST_IS_NULL(player->frame_.last_frame_);
@@ -110,7 +113,8 @@ void video_player_test_play(VideoPlayerFixture *fixture, gconstpointer data)
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
     g_usleep(default_sleep_time);
@@ -136,7 +140,8 @@ void video_player_test_pause(VideoPlayerFixture *fixture, gconstpointer data)
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
 
@@ -172,7 +177,8 @@ void video_player_test_stop(VideoPlayerFixture *fixture, gconstpointer data)
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
     TEST_IS_NULL(player->callbacks_.pos_changed_cb_);
 
@@ -223,15 +229,17 @@ void video_player_test_set_position(VideoPlayerFixture *fixture, gconstpointer d
 
     video_player_set_source(player, video_path);
     video_player_set_muted(player, TRUE);
-    video_player_set_callback_data(player, fixture);
-    video_player_set_position_changed_callback(player, position_changed_cb);
+    video_player_set_position_changed_callback(player,
+                                               position_changed_cb,
+                                               fixture);
 
     g_mutex_lock(&fixture->pos_helper_->mutex_);
 
     BEGIN_TEST_CASE
 
-    TEST_IS_NOT_NULL(player->callbacks_.callback_data_);
+    TEST_IS_NULL(player->callbacks_.cb_data_.render_cb_data_);
     TEST_IS_NULL(player->callbacks_.render_cb_);
+    TEST_IS_NOT_NULL(player->callbacks_.cb_data_.pos_changed_cb_data_);
     TEST_IS_NOT_NULL(player->callbacks_.pos_changed_cb_);
 
     video_player_play(player);
