@@ -31,17 +31,17 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         set(LIB_PATH "${MediaOrganizer_SOURCE_DIR}/windows/lib/win32")
     endif(${ARCH} MATCHES "x86_64")
 
-    find_package(ProductVersion)
-    generate_product_version(
-        PROJECT_INFORMATION
-        NAME "Media Organizer"
-        ICON "${MediaOrganizer_SOURCE_DIR}/windows/project.ico"
-        VERSION_MAJOR ${MediaOrganizer_VERSION_MAJOR}
-        VERSION_MINOR ${MediaOrganizer_VERSION_MINOR}
-        VERSION_PATCH ${MediaOrganizer_VERSION_PATCH}
-        VERSION_REVISION 0
-        COMPANY_NAME "Romeo Calota"
-    )
+#    find_package(ProductVersion)
+#    generate_product_version(
+#        PROJECT_INFORMATION
+#        NAME "Media Organizer"
+#        ICON "${MediaOrganizer_SOURCE_DIR}/windows/project.ico"
+#        VERSION_MAJOR ${MediaOrganizer_VERSION_MAJOR}
+#        VERSION_MINOR ${MediaOrganizer_VERSION_MINOR}
+#        VERSION_PATCH ${MediaOrganizer_VERSION_PATCH}
+#        VERSION_REVISION 0
+#        COMPANY_NAME "Romeo Calota"
+#    )
 
     set(LIBVLC_INCLUDE_DIRS "${MediaOrganizer_SOURCE_DIR}/windows/include")
     set(LIBVLC_LIBRARIES "${LIB_PATH}/libvlc.dll")
