@@ -1,0 +1,12 @@
+Windows
+-------
+install msys2
+pacman -S mingw-w64-i686-cmake
+pacman -S mingw-w64-i686-gcc
+pacman -S mingw-w64-i686-glib2
+pacman -S mingw-w64-i686-make
+pacman -S mingw-w64-i686-pkg-config
+cmake .. -G "MinGW Makefiles"
+cmake ..
+mingw32-make
+
